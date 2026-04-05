@@ -2,174 +2,76 @@
 
 > An image management toolkit for Obsidian
 
-`Image Toolkit Pro` is an Obsidian desktop plugin for localizing external image resources, organizing attachments, cleaning unused files, and enhancing image preview interactions.
+`Image Toolkit Pro` is an Obsidian desktop plugin for managing images and attachments. It combines media localization, attachment cleanup, and preview interaction enhancements in a single plugin, making it easier to maintain media-heavy notes over time.
 
-It is especially useful when you want to:
+## What It Solves
 
-- paste content from the web into Obsidian and automatically download linked images
-- process external media links from Word, OpenOffice, HTML, or Markdown
-- save base64 images into your vault
-- store attachments in the Obsidian attachment folder or in note-adjacent media folders
-- rename new attachments with MD5-based filenames to reduce duplicates
-- clean unused images, unused attachments, or unlinked attachments
+The plugin mainly targets three problems:
 
----
+- too many external images: download images from web pages, Markdown, HTML, Word, and OpenOffice into your local vault
+- messy attachments: save, rename, deduplicate, and organize attachments using consistent rules
+- awkward image interactions: add cleanup, preview, context menu, and drag-to-resize enhancements
 
-## Upgrade Highlights
+## Core Capabilities
 
-This version is no longer just a localization plugin. It expands `obsidian-local-images-plus` into a more complete image workflow plugin with integrated cleanup and preview features.
-
-Major upgrades include:
-
-- integrated the core functionality of `oz-clear-unused-images-obsidian`
-- added vault-wide cleanup commands for unused images and attachments
-- added a dedicated left Ribbon shortcut for `Clear Unused Images in Vault`
-- made the cleanup Ribbon independently configurable from the settings page
-- integrated the core interaction features of `AttachFlow`
-- added image context menu actions such as move, rename, delete, copy, reveal, and open externally
-- added drag-to-resize support for images and videos
-- improved image preview behavior: click an image to open preview, click again to close it
-- redesigned the settings UI with top navigation sections:
-  `General / Localize / Cleanup / Preview / Advanced`
-- added settings-page language switching for `Simplified Chinese` and `English`
-- unified and polished settings text, context menu labels, modals, and notification wording
-- fixed missing `.avif` support in unused-image cleanup
-- kept the command palette as the full entry point while removing the old localization Ribbon and retaining only the dedicated cleanup shortcut
-- standardized project metadata:
-  - name: `Image Toolkit Pro`
-  - id: `image-toolkit-pro`
-  - version: `2026.3`
-  - build output directory: `released`
-
----
-
-## Main Features
-
-### 1. Media Localization
+### 1. Image Localization
 
 - download web images and other recognized attachments into the local vault
 - process external media from copy, paste, and drag-and-drop workflows
-- support copying local `file://` files into the attachment folder
+- copy local `file://` files into the attachment folder
 - download remote attachment links found in Markdown notes
 - save embedded base64 images
 
 ### 2. Attachment Organization
 
-- save attachments to the Obsidian attachment folder
-- save attachments to a custom root folder
-- save attachments to a note-adjacent media folder
-- generate MD5-based filenames for attachments
-- preserve original filenames or `Open file` tags
-- support full path, relative path, and filename-only link styles
+- support the Obsidian attachment folder, a custom root folder, or a note-adjacent media folder
+- support full-path, relative-path, and filename-only link styles
+- support timestamp-based naming for new attachments: `YYYYMMDD-HHmmss-random6`
+- keep deduplication behavior to avoid repeated files
+- optionally preserve original filenames or open-file tags
 
 ### 3. Image Compression
 
-- compress downloaded images into JPEG or WebP
-- handle both web images and pasted local images
-- adjust image quality
+- compress downloaded web images and pasted local images
+- output `jpeg` or `webp`
+- adjust compression quality
 
 ### 4. Attachment Cleanup
 
-- clean unlinked attachments from the current note's attachment folder
-  only available when using the "save in the specified folder next to the note" mode, with a folder pattern ending in `${notename}` and without `${date}`
 - clean unused images across the whole vault
 - clean unused attachments across the whole vault
+- clean unlinked attachments in the current note's attachment folder
 - move cleanup results to Obsidian trash, system trash, or delete them permanently
-- trigger the vault-wide unused-image cleanup directly from the left Ribbon
+- provide a left Ribbon shortcut for unused-image cleanup
 
 ### 5. Preview and Interaction Enhancements
 
-- add image context menu actions
-- copy image, link, or Markdown link
-- reveal files in the system file manager or open them externally
-- rename attachments and move them to another folder
-- delete the current link or delete both the attachment and its links
-- drag to resize images and videos
-- click an image to open a zoomable preview, then click again to close it
+- image context menu actions: copy, open, reveal, rename, move, delete
+- drag-to-resize support for images and videos
+- single-click preview, click again to close
+- reveal and highlight files in the navigator
 
----
+## Integrated Upgrade Highlights
 
-## Supported Image Formats
+This version expands `obsidian-local-images-plus` into a more complete image workflow plugin.
 
-Current support status for common image formats:
+Major integrations and upgrades include:
 
-| Format | Detect from web / paste | Save locally | Included in unused-image cleanup | Can be used as compression output |
-|---|---|---:|---:|---:|
-| `jpg` / `jpeg` | Yes | Yes | Yes | No |
-| `png` | Yes | Yes | Yes | Yes, can be converted to `jpeg` / `webp` |
-| `gif` | Yes | Yes | Yes | No |
-| `svg` | Yes | Yes | Yes | No |
-| `bmp` | Yes | Yes | Yes | No |
-| `webp` | Yes | Yes | Yes | Yes |
-| `avif` | Yes | Yes | Yes | No |
-
-Notes:
-
-- the plugin detects file types using both binary content and link paths, so `webp` and `avif` are both recognized correctly
-- image compression currently focuses mainly on `png`, which can be converted to `jpeg` or `webp`
-- `webp` and `avif` are currently supported for saving and cleanup, but are not re-encoded into other formats
-
----
-
-## Current Version
-
-- plugin name: `Image Toolkit Pro`
-- plugin id: `image-toolkit-pro`
-- version: `2026.3`
-- minimum Obsidian version: `1.0.3`
-- desktop only: `true`
-
----
-
-## Installation
-
-### Option 1: Manual Installation
-
-1. Open your Obsidian vault
-2. Go to `.obsidian/plugins/`
-3. Copy the plugin folder into it
-4. Restart Obsidian
-5. Enable `Image Toolkit Pro` in Community Plugins
-
-Use the current build output directory:
-
-- `released/`
-
-### Option 2: Build from Source
-
-```bash
-npm install
-npm run build
-```
-
-Build output:
-
-- `released/main.js`
-- `released/manifest.json`
-- `released/styles.css`
-
----
-
-## Usage
-
-### Typical Workflow
-
-The most common usage pattern is:
-
-1. copy content from a web page, document, or another app
-2. paste it into an Obsidian note
-3. let the plugin download media, save attachments, and rewrite links based on your settings
-
-If you prefer more control, you can also run commands manually from the command palette.
-
-In practice:
-
-- the left Ribbon is intended as a shortcut for the most common cleanup action
-- the command palette remains the complete entry point for cleanup and advanced commands
-
----
+- integration of `oz-clear-unused-images-obsidian` cleanup features
+- integration of `AttachFlow` preview and interaction features
+- redesigned settings UI with top navigation:
+  - `General`
+  - `Localize`
+  - `Cleanup`
+  - `Preview`
+- language switching for the settings page: `Simplified Chinese / English`
+- command palette retained as the full entry point
+- cleanup Ribbon retained as a high-frequency shortcut
+- broad UI cleanup, Chinese localization, and interaction polishing
 
 ## Commands
+
+Command palette entries are intentionally kept in English.
 
 ### Localization
 
@@ -193,158 +95,151 @@ In practice:
 
 ### Cleanup
 
-Command palette entries are always shown in English:
-
 - `Clear Unused Images in Vault`
   - Chinese meaning: clean unused images in the vault
-  - scan the whole vault and remove unused images
 
 - `Clear Unused Attachments in Vault`
   - Chinese meaning: clean unused attachments in the vault
-  - scan the whole vault and remove unused attachments
 
 - `Clear Unlinked Attachments in Current Note Folder (Next to Note mode)`
   - Chinese meaning: clean unlinked attachments in the current note folder
-  - only available in "next to note" mode, and the folder pattern must end with `${notename}` and must not contain `${date}`
-  - clean unlinked attachments from the current note's attachment folder
+  - only available when using the “next to note” storage mode and a folder pattern that ends with `${notename}` and does not contain `${date}`
 
 ### Preview
 
 - `Delete Current Note and Its Attachments`
   - delete the current note and handle attachments referenced only by that note
 
-- image context menu
-  - provides copy, open, reveal, rename, move, and delete actions
-
----
-
 ## Ribbon
 
-The plugin provides a left Ribbon action:
+The plugin provides one left Ribbon action:
 
-- `Clear unused images` in non-Chinese UI
-- `清理未使用图片` in Chinese UI
+- Chinese UI: `清理未使用图片`
+- Other UI languages: `Clear unused images`
 
 It triggers:
 
 - `Clear Unused Images in Vault`
 
-The Ribbon label follows Obsidian's display language.
-
 This Ribbon action is a shortcut for the most common cleanup task rather than a replacement for the command palette.
-If you want the full cleanup set, such as unused attachment cleanup or current-note-folder unlinked attachment cleanup, use the command palette.
 
-You can enable or disable this Ribbon icon from the settings page.
-
----
-
-## Settings
-
-The settings page is organized into the following sections:
+## Settings Overview
 
 ### General
 
-- settings-page language: `Simplified Chinese / English`
-- show notifications
-- hide extra commands
-- show the cleanup Ribbon icon
-- automatic processing toggle and interval
+- settings-page language
+- notifications
+- extra command visibility
+- cleanup Ribbon visibility
+- automatic processing and interval
 - process newly created Markdown files
 - process newly created attachments
-- use MD5 naming for new attachments
+- timestamp naming for new attachments
+- developer options
 
 ### Localize
 
-- retry count per attachment
-- download unknown file types
-- compress web images / pasted images
+- download retry count
+- unknown file download
+- image compression
 - compression format and quality
-- minimum file size limit
+- file size limit
 - excluded extensions
-- preserve link captions
-- append original filenames or open-file tags
-- link style: full path / relative path / filename only
+- link title and original filename preservation
+- link path style
 - date format
-- save location for new attachments
-- media folder template
-- sync move / delete / rename behavior for media folders
-- skip creation of the default Obsidian attachment folder
+- new attachment save location and media folder template
 
 ### Cleanup
 
-- deletion target for unused files
-- cleanup log modal
-- exclude subfolders
-- permanently delete unlinked attachments in the current note folder cleanup
+- deletion target
+- log modal
+- whether to exclude subfolders
+- whether to fully delete unlinked attachments
 - excluded folder list
 
 ### Preview
 
 - attachment deletion destination
 - deletion log modal
-- show `Move file to...`
-- enable single-click image preview
-- adaptive preview ratio
-- enable drag-to-resize
+- “Move file to...” visibility
+- click-to-preview
+- preview ratio
+- drag-to-resize
 - resize step
 - preview debug mode
 
-### Advanced
+## Supported Image Formats
 
-- include pattern
-- core debug mode
+| Format | Detect from web / paste | Save locally | Included in unused-image cleanup | Can be used as compression output |
+|---|---|---:|---:|---:|
+| `jpg` / `jpeg` | Yes | Yes | Yes | No |
+| `png` | Yes | Yes | Yes | Yes, can be converted to `jpeg` / `webp` |
+| `gif` | Yes | Yes | Yes | No |
+| `svg` | Yes | Yes | Yes | No |
+| `bmp` | Yes | Yes | Yes | No |
+| `webp` | Yes | Yes | Yes | Yes |
+| `avif` | Yes | Yes | Yes | No |
 
----
+Notes:
 
-## Notes
+- file types are detected using both binary content and link paths, so `webp` and `avif` are recognized correctly
+- image compression currently mainly targets `png`
+- `webp` and `avif` are supported for saving and cleanup, but are not re-encoded into other formats
 
-### 1. Back up before batch operations
+## Installation
 
-The following actions may modify many notes or files at once:
+1. Open your Obsidian vault
+2. Go to `.obsidian/plugins/`
+3. Copy the plugin folder into it
+4. Restart Obsidian
+5. Enable `Image Toolkit Pro` in Community Plugins
+
+## Current Version
+
+- plugin name: `Image Toolkit Pro`
+- plugin id: `image-toolkit-pro`
+- version: `2026.4`
+- minimum Obsidian version: `1.0.3`
+- desktop only: `true`
+
+## Usage Notes
+
+### Back Up Before Batch Operations
+
+The following actions may modify many notes or attachments at once:
 
 - processing the whole vault
 - cleaning unused attachments
 - cleaning unlinked attachments
-- batch link rewriting
+- batch rewriting links
 
-Back up your vault before running them.
+Backing up your vault first is strongly recommended.
 
-### 2. Difference Between Cleanup Commands
+### Cleanup Command Differences
 
 - `Clear Unused Images in Vault`
-  - Chinese meaning: clean unused images in the vault
-  - scans the whole vault
-  - removes images that are not referenced anywhere
+  - scans the whole vault for unused images
 
 - `Clear Unused Attachments in Vault`
-  - Chinese meaning: clean unused attachments in the vault
-  - scans the whole vault
-  - removes attachments that are not referenced anywhere
+  - scans the whole vault for unused attachments
 
 - `Clear Unlinked Attachments in Current Note Folder (Next to Note mode)`
-  - Chinese meaning: clean unlinked attachments in the current note folder
-  - works on the current note's attachment folder
-  - only available in "next to note" mode, and the folder pattern must end with `${notename}` and must not contain `${date}`
-  - is intended for note-level unlinked attachment cleanup
+  - targets the current note's attachment folder only
+  - requires the specific folder mode and template constraints described above
 
-### 3. Large Files
+### Known Compatibility Notes
 
-For very large local files or media files, frequent batch processing may affect performance.
-
-### 4. Compatibility Notes
-
-The original project is known to have possible compatibility issues with:
+The original project reports possible compatibility issues with:
 
 - `Paste Image Rename`
 - `Pretty BibTex`
 
----
-
 ## Credits
 
-This plugin is based on `obsidian-local-images-plus`, and further integrates `clear-unused-images` and `AttachFlow` image interaction enhancements.
+This plugin is based on `obsidian-local-images-plus` and further integrates the core ideas of `clear-unused-images` and `AttachFlow`.
 
-Thanks to these projects and contributors:
+Thanks to the following projects and contributors:
 
 - [Sergei-Korneev/obsidian-local-images-plus](https://github.com/Sergei-Korneev/obsidian-local-images-plus)
 - [aleksey-rezvov/obsidian-local-images](https://github.com/aleksey-rezvov/obsidian-local-images)
@@ -353,12 +248,8 @@ Thanks to these projects and contributors:
 - [elf004-star/Obsidian-AttachFlow](https://github.com/elf004-star/Obsidian-AttachFlow)
 - [Yaozhuwa/AttachFlow](https://github.com/Yaozhuwa/AttachFlow)
 
----
-
 ## License
 
-Using this plugin means you accept the terms of the project license.
-
-See:
+Using this plugin means you accept the project license terms. See:
 
 - `LICENSE`
