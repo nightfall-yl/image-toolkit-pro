@@ -1,0 +1,11 @@
+{
+  "id": "image-toolkit-pro",
+  "name": "Image Toolkit Pro",
+  "version": "2026.3",
+  "minAppVersion": "1.0.3",
+  "description": "Image Toolkit Pro searches for external media links in your notes, downloads and saves them locally, adjusts note links, and includes unused attachment cleanup tools.",
+  "author": "nightfall-yl",
+  "authorUrl": "https://github.com/Sergei-Korneev/obsidian-local-images-plus",
+  "fundingUrl": "https://www.buymeacoffee.com/sergeikorneev",
+  "isDesktopOnly": true 
+}
