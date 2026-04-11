@@ -20,6 +20,3 @@ test.sh
 **/.DS_Store
 
 dev/
-
-# build output
-released/
