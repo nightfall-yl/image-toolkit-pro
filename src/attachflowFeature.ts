@@ -33,6 +33,7 @@ export class AttachFlowFeature {
   watcher?: VideoDivWidthChangeWatcher;
   highlightedExplorerPath: string | null = null;
   explorerHighlightSuppressTimer: number | null = null;
+  imageExtensions = new Set(["png", "jpg", "jpeg", "gif", "bmp", "svg", "webp", "avif"]);
 
   constructor(plugin: LocalImagesPlugin) {
     this.plugin = plugin;
@@ -41,6 +42,47 @@ export class AttachFlowFeature {
   private isChineseDisplayLanguage() {
     const displayLang = document.documentElement.lang?.toLowerCase() ?? "";
     return displayLang.startsWith("zh");
+  }
+
+  private isImageFile(file: TFile) {
+    return this.imageExtensions.has(file.extension.toLowerCase());
+  }
+
+  private getReferencingMarkdownNotes(file: TFile) {
+    const refs: TFile[] = [];
+    const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
+
+    for (const [sourcePath, linkedPaths] of Object.entries(resolvedLinks)) {
+      if (!linkedPaths[file.path]) {
+        continue;
+      }
+      const sourceFile = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+      if (!(sourceFile instanceof TFile) || !sourceFile.path.endsWith(".md")) {
+        continue;
+      }
+      refs.push(sourceFile);
+    }
+
+    refs.sort((a, b) => a.path.localeCompare(b.path));
+    return refs;
+  }
+
+  private async openSourceNoteForImage(file: TFile) {
+    const notes = this.getReferencingMarkdownNotes(file);
+    if (notes.length === 0) {
+      new Notice(this.isChineseDisplayLanguage() ? "没有找到引用这张图片的笔记。" : "No note references this image.");
+      return;
+    }
+
+    await this.plugin.app.workspace.getLeaf(true).openFile(notes[0]);
+
+    if (notes.length > 1) {
+      new Notice(
+        this.isChineseDisplayLanguage()
+          ? `找到了多个引用笔记，已打开第一个：${notes[0].basename}`
+          : `Multiple notes reference this image. Opened the first one: ${notes[0].basename}`
+      );
+    }
   }
 
   private isInsidePreviewClickZone(target: HTMLImageElement, evt: MouseEvent) {
@@ -63,16 +105,33 @@ export class AttachFlowFeature {
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on("file-menu", (menu, file) => {
-        if (!(file instanceof TFile) || !file.path.endsWith(".md")) {
+        if (!(file instanceof TFile)) {
           return;
         }
+
+        if (file.path.endsWith(".md")) {
+          menu.addItem((item: MenuItem) => {
+            item
+              .setTitle(this.isChineseDisplayLanguage() ? "删除文件及其附件" : "Delete Current Note and Its Attachments")
+              .setIcon("trash-2")
+              .setSection("danger")
+              .onClick(() => {
+                new DeleteAllLogsModal(file, this.plugin).open();
+              });
+          });
+          return;
+        }
+
+        if (!this.isImageFile(file) || this.getReferencingMarkdownNotes(file).length === 0) {
+          return;
+        }
+
         menu.addItem((item: MenuItem) => {
           item
-            .setTitle(this.isChineseDisplayLanguage() ? "删除文件及其附件" : "Delete Current Note and Its Attachments")
-            .setIcon("trash-2")
-            .setSection("danger")
-            .onClick(() => {
-              new DeleteAllLogsModal(file, this.plugin).open();
+            .setTitle(this.isChineseDisplayLanguage() ? "跳转到原笔记" : "Go to Source Note")
+            .setIcon("file-input")
+            .onClick(async () => {
+              await this.openSourceNoteForImage(file);
             });
         });
       })

@@ -199,7 +199,7 @@ Notes:
 
 - plugin name: `Image Toolkit Pro`
 - plugin id: `image-toolkit-pro`
-- version: `2026.4`
+- version: `26.4.2`
 - minimum Obsidian version: `1.0.3`
 - desktop only: `true`
 

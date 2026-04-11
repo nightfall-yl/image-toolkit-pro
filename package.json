@@ -1,6 +1,6 @@
 {
   "name": "image-toolkit-pro",
-  "version": "26.4.1",
+  "version": "26.4.2",
   "description": "Image Toolkit Pro is an Obsidian desktop plugin for localizing images, cleaning unused attachments, and enhancing image interactions.",
   "main": "build/main.js",
   "scripts": {
