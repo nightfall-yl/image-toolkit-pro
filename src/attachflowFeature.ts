@@ -151,7 +151,7 @@ export class AttachFlowFeature {
     });
 
     this.plugin.registerDomEvent(document, "click", async (evt: MouseEvent) => {
-      if (!this.plugin.settings.attachFlowClickView) {
+      if (!this.plugin.settings.clickPreviewEnabled) {
         return;
       }
       const target = evt.target as HTMLElement;
@@ -171,7 +171,7 @@ export class AttachFlowFeature {
       createZoomMask();
       const { zoomedImage, originalWidth, originalHeight } = await createZoomedImage(
         (target as HTMLImageElement).src,
-        this.plugin.settings.attachFlowAdaptiveRatio
+        this.plugin.settings.previewAdaptiveRatio
       );
       const scaleDiv = createZoomScaleDiv(zoomedImage, originalWidth, originalHeight);
       zoomedImage.addEventListener("wheel", (e) =>
@@ -186,7 +186,7 @@ export class AttachFlowFeature {
           zoomedImage,
           originalWidth,
           originalHeight,
-          this.plugin.settings.attachFlowAdaptiveRatio
+          this.plugin.settings.previewAdaptiveRatio
         );
         updateZoomScaleDiv(scaleDiv, zoomedImage, originalWidth, originalHeight);
       });
@@ -210,7 +210,7 @@ export class AttachFlowFeature {
       })
     );
 
-    setDebug(this.plugin.settings.attachFlowDebug);
+    setDebug(this.plugin.settings.debugMode);
   }
 
   onunload() {
@@ -225,7 +225,7 @@ export class AttachFlowFeature {
   }
 
   refreshDebug() {
-    setDebug(this.plugin.settings.attachFlowDebug);
+    setDebug(this.plugin.settings.debugMode);
   }
 
   initMutationObserver() {
@@ -379,7 +379,7 @@ export class AttachFlowFeature {
 
     this.plugin.register(
       onElement(doc, "mousedown", "img, video", (event: MouseEvent) => {
-        if (!this.plugin.settings.attachFlowDragResize) {
+        if (!this.plugin.settings.dragResizeEnabled) {
           return;
         }
         const currentMd = this.plugin.app.workspace.getActiveFile();
@@ -460,8 +460,8 @@ export class AttachFlowFeature {
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
 
-            if (this.plugin.settings.attachFlowResizeInterval > 1) {
-              const resizeInterval = this.plugin.settings.attachFlowResizeInterval;
+            if (this.plugin.settings.dragResizeStep > 1) {
+              const resizeInterval = this.plugin.settings.dragResizeStep;
               const widthOffset = lastUpdate > 0 ? resizeInterval : 0;
               if (updatedWidth % resizeInterval !== 0) {
                 updatedWidth = Math.floor(updatedWidth / resizeInterval) * resizeInterval + widthOffset;
@@ -506,14 +506,14 @@ export class AttachFlowFeature {
           const y = moveEvent.clientY - rect.top;
 
           if ((x >= rect.width - edgeSize || x <= edgeSize || y >= rect.height - edgeSize || y <= edgeSize)) {
-            if (this.plugin.settings.attachFlowDragResize && !inPreview) {
+            if (this.plugin.settings.dragResizeEnabled && !inPreview) {
               img.classList.remove("image-ready-click-view");
               img.classList.add("image-ready-resize");
-            } else if (inPreview && this.plugin.settings.attachFlowClickView) {
+            } else if (inPreview && this.plugin.settings.clickPreviewEnabled) {
               img.classList.add("image-ready-click-view");
               img.classList.remove("image-ready-resize");
             }
-          } else if (this.plugin.settings.attachFlowClickView) {
+          } else if (this.plugin.settings.clickPreviewEnabled) {
             img.classList.add("image-ready-click-view");
             img.classList.remove("image-ready-resize");
           } else {
@@ -534,7 +534,7 @@ export class AttachFlowFeature {
           return;
         }
         const img = event.target as HTMLImageElement | HTMLVideoElement;
-        if (this.plugin.settings.attachFlowClickView || this.plugin.settings.attachFlowDragResize) {
+        if (this.plugin.settings.clickPreviewEnabled || this.plugin.settings.dragResizeEnabled) {
           img.classList.remove("image-ready-click-view", "image-ready-resize");
         }
       })
@@ -629,7 +629,7 @@ export class AttachFlowFeature {
       })
     );
 
-    if (this.plugin.settings.attachFlowMoveFileMenu) {
+    if (this.plugin.settings.showMoveFileMenu) {
       menu.addItem((item: MenuItem) =>
         item.setIcon("folder-tree").setTitle("移动文件到...").onClick(() => {
           handlerMoveFile(this.plugin, fileBaseName, currentMd);
@@ -805,7 +805,7 @@ export class AttachFlowFeature {
 
     const isLinux = navigator.userAgent.toLowerCase().includes("linux");
     let offset = isLinux ? -138 : -163;
-    if (this.plugin.settings.attachFlowMoveFileMenu) {
+    if (this.plugin.settings.showMoveFileMenu) {
       offset -= 25;
     }
     if (inTable && !inPreview) {

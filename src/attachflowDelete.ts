@@ -4,7 +4,7 @@ import type { AttachFlowHost } from "./attachflowUtil";
 const SUCCESS_NOTICE_TIMEOUT = 1800;
 
 export const deleteFile = async (file: TFile | TFolder, plugin: AttachFlowHost) => {
-  const deleteOption = plugin.settings.attachFlowDeleteOption;
+  const deleteOption = plugin.settings.deleteDestination;
   try {
     if (deleteOption === ".trash") {
       await plugin.app.vault.trash(file, false);

@@ -16,7 +16,7 @@ import {
   NOTICE_TIMEOUT,
   APP_NAME,
   APP_TITLE,
-  VERBOSE,
+  isDebugMode,
   ATT_SIZE_ACHOR
 } from "./config";
 
@@ -59,7 +59,7 @@ export function displayError(error: Error | string, file?: TFile): void {
 
 export async function logError(str: any, isObj: boolean = false) {
 
-  if (VERBOSE) {
+  if (isDebugMode()) {
 
     console.log(APP_TITLE + ":  ");
 

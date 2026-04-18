@@ -1,23 +1,19 @@
-export const APP_NAME = "Image Toolkit Pro";
+export const APP_NAME = "ImgBox Pro";
 export const APP_VERSION = "2026.3";
 export const APP_TITLE = `${APP_NAME}  ${APP_VERSION}`;
 
+// Debug mode — replaces the old VERBOSE module variable and attachFlowDebug setting
+let _debugMode = false;
 
-
-
-//Option to enable debugging
-
-let VERBOSE = false;
-
-function setDebug(value: boolean = false){
-    VERBOSE =  value;
+function setDebugMode(value: boolean = false) {
+	_debugMode = value;
 }
 
+function isDebugMode(): boolean {
+	return _debugMode;
+}
 
-export {VERBOSE, setDebug};
-
-
-
+export { isDebugMode, setDebugMode };
 
 export const SUPPORTED_OS = {"win":"win32","unix":"linux,darwin,freebsd,openbsd"};
 
@@ -63,89 +59,95 @@ export const TIMEOUT_LIKE_INFINITY = 24 * 60 * 60 * 1000;
 export const FORBIDDEN_SYMBOLS_FILENAME_PATTERN = /\s+/g;
 
 export interface ISettings {
-  language: string,
-  processCreated: boolean,
-  ignoredExt: string,
-  processAll: boolean,
-  useCaptions: boolean,
-  pathInTags: string,
-  downUnknown: boolean,
-  saveAttE: string,
-  realTimeUpdate: boolean;
-  filesizeLimit: number,
-  tryCount: number,
-  realTimeUpdateInterval: number;
-  addNameOfFile: boolean;
+  // ---- 通用 ----
   showNotifications: boolean;
-  includeps: string;
-  includepattern: string;
-  mediaRootDir: string;
-  disAddCom: boolean;
-  useTimestampNameForNewAtt: boolean;
-  removeMediaFolder: boolean;
-  removeOrphansCompl: boolean;
-  PngToJpeg: boolean;
-  PngToJpegLocal: boolean;
-  JpegQuality: number;
-  DoNotCreateObsFolder: boolean;
-  DateFormat: string;
-  ImgCompressionType:string;
-  ExcludedFoldersList:string;
-  ExcludedFoldersListRegexp: string;
-  clearUnusedDeleteOption: string;
-  clearUnusedLogsModal: boolean;
-  clearUnusedRibbonIcon: boolean;
-  clearUnusedExcludeSubfolders: boolean;
-  attachFlowDeleteOption: string;
-  attachFlowLogsModal: boolean;
-  attachFlowDragResize: boolean;
-  attachFlowResizeInterval: number;
-  attachFlowClickView: boolean;
-  attachFlowAdaptiveRatio: number;
-  attachFlowMoveFileMenu: boolean;
-  attachFlowDebug: boolean;
+  hideExtraCommands: boolean;
+  showCleanupRibbon: boolean;
+  autoProcess: boolean;
+  autoProcessInterval: number;
+  processNewMarkdown: boolean;
+  processNewAttachments: boolean;
+  useTimestampNaming: boolean;
+  // ---- 开发者选项 ----
+  includePattern: string;
+  includePatternRegex: string;
+  debugMode: boolean;
+
+  // ---- 图片本地化 ----
+  downloadRetryCount: number;
+  downloadUnknownTypes: boolean;
+  compressImage: boolean;
+  compressionFormat: string;
+  compressionQuality: number;
+  minFileSizeKB: number;
+  excludedExtensions: string;
+  preserveCaptions: boolean;
+  appendOriginalName: boolean;
+  linkPathFormat: string;
+  dateFormat: string;
+  attachmentSaveLocation: string;
+  syncMediaFolder: boolean;
+  mediaFolderPath: string;
+  skipObsidianFolderCreation: boolean;
+
+  // ---- 图片清理 ----
+  deleteDestination: string;
+  showOperationLogs: boolean;
+  excludeSubfolders: boolean;
+  excludedFolders: string;
+  excludedFoldersRegexp: string;
+
+  // ---- 图片预览 ----
+  showMoveFileMenu: boolean;
+  clickPreviewEnabled: boolean;
+  previewAdaptiveRatio: number;
+  dragResizeEnabled: boolean;
+  dragResizeStep: number;
 }
 
 export const DEFAULT_SETTINGS: ISettings = {
-  language: "zh-CN",
-  processCreated: true,
-  ignoredExt: "cnt|php|htm|html",
-  processAll: true,
-  useCaptions: true,
-  pathInTags: "fullDirPath",
-  downUnknown: false,
-  saveAttE: "obsFolder",
-  realTimeUpdate: true,
-  filesizeLimit: 0,
-  tryCount: 2,
-  realTimeUpdateInterval: 5,
-  addNameOfFile: true,
+  // 通用
   showNotifications: true,
-  includeps: "md|canvas",
-  includepattern: "(?<md>.*\\.md)|(?<canvas>.*\\.canvas)",
-  mediaRootDir: "_resources/${notename}",
-  disAddCom: false,
-  useTimestampNameForNewAtt: true,
-  removeMediaFolder: true,
-  removeOrphansCompl: false,
-  PngToJpeg: false,
-  PngToJpegLocal: true,
-  JpegQuality: 80,
-  DoNotCreateObsFolder: false,
-  DateFormat: "YYYY MM DD",
-  ImgCompressionType: "image/jpeg",
-  ExcludedFoldersList: "",
-  ExcludedFoldersListRegexp: "",
-  clearUnusedDeleteOption: ".trash",
-  clearUnusedLogsModal: true,
-  clearUnusedRibbonIcon: true,
-  clearUnusedExcludeSubfolders: false,
-  attachFlowDeleteOption: ".trash",
-  attachFlowLogsModal: true,
-  attachFlowDragResize: true,
-  attachFlowResizeInterval: 0,
-  attachFlowClickView: false,
-  attachFlowAdaptiveRatio: 0.9,
-  attachFlowMoveFileMenu: false,
-  attachFlowDebug: false
+  hideExtraCommands: false,
+  showCleanupRibbon: true,
+  autoProcess: true,
+  autoProcessInterval: 5,
+  processNewMarkdown: true,
+  processNewAttachments: true,
+  useTimestampNaming: true,
+  // 开发者选项
+  includePattern: "md|canvas",
+  includePatternRegex: "(?<md>.*\\.md)|(?<canvas>.*\\.canvas)",
+  debugMode: false,
+
+  // 图片本地化
+  downloadRetryCount: 2,
+  downloadUnknownTypes: false,
+  compressImage: true,
+  compressionFormat: "image/jpeg",
+  compressionQuality: 80,
+  minFileSizeKB: 0,
+  excludedExtensions: "cnt|php|htm|html",
+  preserveCaptions: true,
+  appendOriginalName: true,
+  linkPathFormat: "fullDirPath",
+  dateFormat: "YYYY MM DD",
+  attachmentSaveLocation: "obsFolder",
+  syncMediaFolder: true,
+  mediaFolderPath: "_resources/${notename}",
+  skipObsidianFolderCreation: false,
+
+  // 图片清理
+  deleteDestination: ".trash",
+  showOperationLogs: true,
+  excludeSubfolders: false,
+  excludedFolders: "",
+  excludedFoldersRegexp: "",
+
+  // 图片预览
+  showMoveFileMenu: false,
+  clickPreviewEnabled: false,
+  previewAdaptiveRatio: 0.9,
+  dragResizeEnabled: true,
+  dragResizeStep: 0,
 };

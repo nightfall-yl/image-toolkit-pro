@@ -1,6 +1,6 @@
 import { App, FuzzyMatch, FuzzySuggestModal, Modal, Notice, Setting, TFile, TFolder, Vault, MarkdownView } from "obsidian";
 import { EditorView } from "@codemirror/view";
-import { ISettings } from "./config";
+import { ISettings, isDebugMode, setDebugMode } from "./config";
 
 export interface AttachFlowHost {
   app: App;
@@ -8,17 +8,16 @@ export interface AttachFlowHost {
   saveSettings(): Promise<void>;
 }
 
-export let DEBUG = false;
 const SUCCESS_NOTICE_TIMEOUT = 1800;
 
 export const print = (message?: any, ...optionalParams: any[]) => {
-  if (DEBUG) {
+  if (isDebugMode()) {
     console.log(message, ...optionalParams);
   }
 };
 
 export function setDebug(value: boolean) {
-  DEBUG = value;
+  setDebugMode(value);
 }
 
 export const checkReferenceInfo = (
@@ -86,7 +85,7 @@ const onlyOneFileExists = (file: TFile): boolean => {
 };
 
 export const pureClearAttachment = async (plugin: AttachFlowHost, file: TFile, targetType: string) => {
-  const deleteOption = plugin.settings.attachFlowDeleteOption;
+  const deleteOption = plugin.settings.deleteDestination;
   const deleteFileFolder = onlyOneFileExists(file);
   const fileFolder = getFileParentFolder(file);
   const name = targetType === "img" ? "图片" : "文件";

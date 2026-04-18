@@ -40,7 +40,7 @@ import {
   MD_SEARCH_PATTERN,
   NOTICE_TIMEOUT,
   TIMEOUT_LIKE_INFINITY,
-
+  setDebugMode,
 } from "./config"
 
 import { UniqueQueue } from "./uniqueQueue"
@@ -71,15 +71,6 @@ export default class LocalImagesPlugin extends Plugin {
   clearUnusedRibbonIconEl: HTMLElement | undefined = undefined
   attachFlowFeature: AttachFlowFeature | undefined = undefined
   latestCreatedMarkdownFile: TFile | null = null
-
-  private getDefaultSettingsLanguage(): string {
-    const displayLanguage =
-      document.documentElement.lang ||
-      navigator.language ||
-      "en"
-
-    return displayLanguage.toLowerCase().startsWith("zh") ? "zh-CN" : "en"
-  }
 
   private async getCurrentNoteAttachmentBaseNames(noteFile: TFile): Promise<Set<string>> {
     const attachmentNames = new Set<string>()
@@ -181,7 +172,7 @@ export default class LocalImagesPlugin extends Plugin {
 
     this.refreshRibbonIcons()
 
-    if (!this.settings.disAddCom) {
+    if (!this.settings.hideExtraCommands) {
 
       this.addCommand({
         id: "set-title-as-name",
@@ -240,13 +231,13 @@ export default class LocalImagesPlugin extends Plugin {
       if (!file ||
         !(file instanceof TFile) ||
         !(this.ExemplaryOfMD(file.path)) ||
-        !this.settings.removeMediaFolder ||
-        this.settings.saveAttE != "nextToNoteS") {
+        !this.settings.syncMediaFolder ||
+        this.settings.attachmentSaveLocation != "nextToNoteS") {
         return
       }
 
 
-      let rootdir = this.settings.mediaRootDir
+      let rootdir = this.settings.mediaFolderPath
       const useSysTrash = (this.app.vault.getConfig("trashOption") === "system")
     
       if (path.basename(rootdir).includes("${notename}") &&
@@ -254,7 +245,7 @@ export default class LocalImagesPlugin extends Plugin {
 
         rootdir = rootdir.replace("${notename}", file.basename)
 
-        if (this.settings.saveAttE == "nextToNoteS") {
+        if (this.settings.attachmentSaveLocation == "nextToNoteS") {
           rootdir = pathJoin([path.dirname(file?.path || ""), rootdir])
         }
 
@@ -278,13 +269,13 @@ export default class LocalImagesPlugin extends Plugin {
         !(file instanceof TFile) ||
         !this.ExemplaryOfMD(file.path) ||
         this.ThePathExcluded(String(file.parent?.path)) ||
-        !this.settings.removeMediaFolder ||
-        this.settings.saveAttE != "nextToNoteS" ||
-        this.settings.pathInTags != "onlyRelative") {
+        !this.settings.syncMediaFolder ||
+        this.settings.attachmentSaveLocation != "nextToNoteS" ||
+        this.settings.linkPathFormat != "onlyRelative") {
         return
       }
 
-      let oldRootdir = this.settings.mediaRootDir
+      let oldRootdir = this.settings.mediaFolderPath
 
       if (path.basename(oldRootdir).includes("${notename}") &&
         !oldRootdir.includes("${date}")) {
@@ -334,7 +325,7 @@ export default class LocalImagesPlugin extends Plugin {
         !this.ExemplaryOfMD(file.path)) {
         return
       } else {
-        if (this.settings.processAll) {
+        if (this.settings.processNewAttachments) {
           if (!this.noteModified.includes(file)) {
             this.noteModified.push(file)
           }
@@ -368,7 +359,7 @@ export default class LocalImagesPlugin extends Plugin {
   refreshRibbonIcons = () => {
     this.clearUnusedRibbonIconEl?.remove()
 
-    if (this.settings.clearUnusedRibbonIcon) {
+    if (this.settings.showCleanupRibbon) {
       const displayLang = document.documentElement.lang?.toLowerCase() ?? ""
       const ribbonTitle = displayLang.startsWith("zh")
         ? "清理未使用图片"
@@ -400,7 +391,7 @@ export default class LocalImagesPlugin extends Plugin {
       return
     }
 
-    if (this.settings.clearUnusedLogsModal) {
+    if (this.settings.showOperationLogs) {
       const modalTitle = type === "image" ? "Clear Unused Images - Logs" : "Clear Unused Attachments - Logs"
       const modal = new ClearUnusedLogsModal(modalTitle, logs, this.app)
       modal.open()
@@ -420,12 +411,12 @@ export default class LocalImagesPlugin extends Plugin {
       window.clearInterval(intervalId)
     }
     if (
-      this.settings.realTimeUpdate &&
-      this.settings.realTimeUpdateInterval > 0
+      this.settings.autoProcess &&
+      this.settings.autoProcessInterval > 0
     ) {
       this.intervalId = window.setInterval(
         this.processModifiedQueue,
-        this.settings.realTimeUpdateInterval * 1000
+        this.settings.autoProcessInterval * 1000
       )
       this.registerInterval(this.intervalId)
     }
@@ -552,7 +543,7 @@ export default class LocalImagesPlugin extends Plugin {
 
     if (evt === undefined) { return }
 
-    if (!this.settings.realTimeUpdate) { return }
+    if (!this.settings.autoProcess) { return }
 
     try {
       const activeFile = this.getCurrentNote()
@@ -566,7 +557,7 @@ export default class LocalImagesPlugin extends Plugin {
         // Check if it was a text/html
         if (tItems[key].kind == "string") {
           
-          if (this.settings.realTimeUpdate) {
+          if (this.settings.autoProcess) {
             
             const cont = htmlToMarkdown(evt.clipboardData.getData("text/html")) +
             
@@ -610,11 +601,11 @@ export default class LocalImagesPlugin extends Plugin {
     filesToRemove: Array<TFile> = undefined,
     noteFile: TFile = undefined) => async () => {
 
-      let oldRootdir = this.settings.mediaRootDir
+      let oldRootdir = this.settings.mediaFolderPath
 
       if (type == "plugin") {
         const orphanedAttachments: TFile[] = []
-        if (this.settings.saveAttE != "nextToNoteS" ||
+        if (this.settings.attachmentSaveLocation != "nextToNoteS" ||
           !path.basename(oldRootdir).endsWith("${notename}") ||
           oldRootdir.includes("${date}")) {
           showBalloon("This command requires the settings 'Next to note in the folder specified below' and pattern '${notename}' at the end to be enabled, also the path cannot contain ${date} pattern.\nPlease, change settings first!\r\n", this.settings.showNotifications)
@@ -669,14 +660,14 @@ export default class LocalImagesPlugin extends Plugin {
 
       if (type == "execremove") {
         const useSysTrash = (this.app.vault.getConfig("trashOption") === "system")
-        const remcompl = this.settings.removeOrphansCompl
+        const deletePermanently = this.settings.deleteDestination === "permanent"
         let msg = "";
 
         if (filesToRemove) {
 
           filesToRemove.forEach((el: TFile) => {
 
-            if (remcompl) {
+            if (deletePermanently) {
               msg = "were deleted completely."
               this.app.vault.delete(el, true)
             } else {
@@ -716,7 +707,7 @@ export default class LocalImagesPlugin extends Plugin {
  
     if (!file ||
       !(file instanceof TFile) ||
-      !(this.settings.processCreated) ||
+      !(this.settings.processNewMarkdown) ||
       !this.ExemplaryOfMD(file.path)
        )
       return
@@ -749,7 +740,7 @@ export default class LocalImagesPlugin extends Plugin {
       !(file instanceof TFile) ||
       this.ExemplaryOfMD(file.path)||
       this.ExemplaryOfCANVAS(file.path)||
-      !(this.settings.processAll))
+      !(this.settings.processNewAttachments))
       return
 
     if (!file.stat.ctime)
@@ -777,23 +768,23 @@ export default class LocalImagesPlugin extends Plugin {
 
 
   private ExemplaryOfMD(pat: string){
-    const includeRegex = new RegExp(this.settings.includepattern, "i")
+    const includeRegex = new RegExp(this.settings.includePatternRegex, "i")
     return (pat.match(includeRegex)?.groups?.md != undefined)
   }
 
 
   private ExemplaryOfCANVAS(pat: string){
-    const includeRegex = new RegExp(this.settings.includepattern, "i")
+    const includeRegex = new RegExp(this.settings.includePatternRegex, "i")
     return (pat.match(includeRegex)?.groups?.canvas != undefined)
   }
 
 
   private ThePathExcluded(pat: string){
-    const includeRegex = new RegExp(this.settings.ExcludedFoldersListRegexp, "i")
+    const includeRegex = new RegExp(this.settings.excludedFoldersRegexp, "i")
     logError(pat.match(includeRegex))
-    // if (pat.match(includeRegex) != null && trimAny(this.settings.ExcludedFoldersList, [" "]).length != 0){
+    // if (pat.match(includeRegex) != null && trimAny(this.settings.excludedFolders, [" "]).length != 0){
     //    showBalloon("The path " + pat + " is excluded in your settings. ", true)}
-    return (pat.match(includeRegex) != null && trimAny(this.settings.ExcludedFoldersList, [" "]).length != 0)
+    return (pat.match(includeRegex) != null && trimAny(this.settings.excludedFolders, [" "]).length != 0)
   }
 
   private processMdFilesOnTimer = async () => {
@@ -845,7 +836,7 @@ export default class LocalImagesPlugin extends Plugin {
 
 
         if (obsmdir != "" && ! await this.app.vault.adapter.exists(obsmdir)) {
-         if ( ! this.settings.DoNotCreateObsFolder){
+         if ( ! this.settings.skipObsidianFolderCreation){
           this.ensureFolderExists(obsmdir)
           showBalloon("You obsidian media folder set to '" + obsmdir + "', and has been created by the plugin. Please, try again. ", this.settings.showNotifications)
           onRet()
@@ -898,13 +889,13 @@ export default class LocalImagesPlugin extends Plugin {
               logError("oldbindata: " + oldBinData)
               logError("oldext: " + fileExt)
            
-              if (this.settings.PngToJpegLocal && fileExt == "png") {
+              if (this.settings.compressImage && fileExt == "png") {
 
 
                 let compType = "image/jpg";
                 let compExt = ".jpg";
 
-                if (this.settings.ImgCompressionType == "image/webp") {
+                if (this.settings.compressionFormat == "image/webp") {
                    compType = "image/webp";
                    compExt = ".webp";
                 }
@@ -912,7 +903,7 @@ export default class LocalImagesPlugin extends Plugin {
                 logError("Compressing image to ")
 
                 const blob = new Blob([new Uint8Array(await this.app.vault.adapter.readBinary(oldpath))]);
-                newBinData = await blobToJpegArrayBuffer(blob, this.settings.JpegQuality*0.01, compType)
+                newBinData = await blobToJpegArrayBuffer(blob, this.settings.compressionQuality*0.01, compType)
                 
                 newMD5 = md5Sig(newBinData)
                 logError(newBinData)
@@ -921,7 +912,7 @@ export default class LocalImagesPlugin extends Plugin {
 
                   if (duplicateFile) {
                     newpath = duplicateFile.path
-                  } else if (this.settings.useTimestampNameForNewAtt) {
+                  } else if (this.settings.useTimestampNaming) {
                     newpath = await this.buildTimestampedAttachmentPath(mdir, compExt)
                   } else {
                     newpath = pathJoin([mdir, cFileName(path.parse(el.link)?.name + compExt)])
@@ -929,7 +920,7 @@ export default class LocalImagesPlugin extends Plugin {
                   newlink = await getRDir(note, this.settings, newpath)
                 }
 
-              } else if (this.settings.useTimestampNameForNewAtt) {
+              } else if (this.settings.useTimestampNaming) {
                 const duplicateFile = await this.findDuplicateAttachmentByHash(mdir, oldMD5)
                 if (duplicateFile) {
                   newpath = duplicateFile.path
@@ -938,7 +929,7 @@ export default class LocalImagesPlugin extends Plugin {
                 }
                 newlink = await getRDir(note, this.settings, newpath)
 
-              } else if (!this.settings.useTimestampNameForNewAtt) {
+              } else if (!this.settings.useTimestampNaming) {
                 newpath = pathJoin([mdir, cFileName(path.basename(el.link))])
                 newlink = await getRDir(note, this.settings, newpath)
               }
@@ -996,7 +987,7 @@ export default class LocalImagesPlugin extends Plugin {
 
 
               let addName = "";
-              if (this.settings.addNameOfFile) {
+              if (this.settings.appendOriginalName) {
                 if (useMdLinks) {
                   addName = `[Open: ${path.basename(el.link)}](${newlink[1]})\r\n`
                 } else {
@@ -1077,7 +1068,7 @@ export default class LocalImagesPlugin extends Plugin {
     this.newfProcInt = 0
     this.newfProcInt = window.setInterval(
       this.processMdFilesOnTimer,
-      this.settings.realTimeUpdateInterval * 1000
+      this.settings.autoProcessInterval * 1000
     )
     this.registerInterval(this.newfProcInt)
   }
@@ -1137,18 +1128,7 @@ export default class LocalImagesPlugin extends Plugin {
   async loadSettings() {
     const savedSettings = (await this.loadData()) ?? {}
     this.settings = Object.assign({}, DEFAULT_SETTINGS, savedSettings)
-
-    if (
-      typeof this.settings.useTimestampNameForNewAtt !== "boolean" &&
-      typeof savedSettings.useMD5ForNewAtt === "boolean"
-    ) {
-      this.settings.useTimestampNameForNewAtt = savedSettings.useMD5ForNewAtt
-    }
-
-    if (typeof savedSettings.language !== "string" || !savedSettings.language.trim()) {
-      this.settings.language = this.getDefaultSettingsLanguage()
-    }
-
+    setDebugMode(this.settings.debugMode)
     this.setupQueueInterval()
   }
 

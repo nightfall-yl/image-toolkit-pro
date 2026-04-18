@@ -1,8 +1,8 @@
-# Image Toolkit Pro
+# ImgBox Pro
 
 > 图片管理工具
 
-`Image Toolkit Pro` 是一个面向 Obsidian 桌面端的图片与附件管理插件。它把图片本地化、附件清理和图片预览交互整合到一个插件里，适合长期维护包含大量媒体资源的笔记。
+`ImgBox Pro` 是一个面向 Obsidian 桌面端的图片与附件管理插件。它把图片本地化、附件清理和图片预览交互整合到一个插件里，适合长期维护包含大量媒体资源的笔记。
 
 ## 功能概览
 
@@ -10,7 +10,7 @@
 - 附件整理：支持多种保存位置、链接写法、新附件时间命名与去重
 - 附件清理：清理未使用图片、未使用附件、当前笔记目录中的未关联附件
 - 图片交互：右键菜单、单击预览、拖拽缩放、导航定位高亮
-- 图片跳转：图片导航栏或图片标签页右键菜单支持“跳转到原笔记”
+- 图片跳转：图片导航栏或图片标签页右键菜单支持"跳转到原笔记"
 
 ## 整合内容
 
@@ -40,7 +40,7 @@
 
 补充说明：
 
-- `Clear Unlinked Attachments in Current Note Folder (Next to Note mode)` 仅在“保存在笔记旁边的指定文件夹”模式下可用，且目录模板必须以 `${notename}` 结尾、不能包含 `${date}`
+- `Clear Unlinked Attachments in Current Note Folder (Next to Note mode)` 仅在"保存在笔记旁边的指定文件夹"模式下可用，且目录模板必须以 `${notename}` 结尾、不能包含 `${date}`
 - 图片导航栏或图片标签页右键菜单支持：`跳转到原笔记`
 
 ## Ribbon
@@ -93,7 +93,7 @@
 
 - 附件删除去向
 - 删除日志弹窗
-- 是否显示“移动文件到...”
+- 是否显示"移动文件到..."
 - 单击预览图片
 - 预览比例
 - 拖拽缩放
@@ -123,13 +123,13 @@
 2. 进入 `.obsidian/plugins/`
 3. 将插件目录放入其中
 4. 重启 Obsidian
-5. 在“社区插件”中启用 `Image Toolkit Pro`
+5. 在"社区插件"中启用 `ImgBox Pro`
 
 ## 当前版本
 
-- 插件名：`Image Toolkit Pro`
+- 插件名：`ImgBox Pro`
 - 中文名称：`图片管理工具`
-- 插件 ID：`image-toolkit-pro`
+- 插件 ID：`imgbox-pro`
 - 版本：`26.4.2`
 - 最低 Obsidian 版本：`1.0.3`
 - 平台限制：仅桌面端
@@ -155,6 +155,10 @@
 - [ozntel/oz-clear-unused-images-obsidian](https://github.com/ozntel/oz-clear-unused-images-obsidian)
 - [elf004-star/Obsidian-AttachFlow](https://github.com/elf004-star/Obsidian-AttachFlow)
 - [Yaozhuwa/AttachFlow](https://github.com/Yaozhuwa/AttachFlow)
+
+## GitHub
+
+- [nightfall-yl/ImgBox-Pro](https://github.com/nightfall-yl/ImgBox-Pro)
 
 ## 许可证
 

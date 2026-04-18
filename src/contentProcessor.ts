@@ -84,7 +84,7 @@ export function imageTagProcessor(app: Plugin,
         else{
             //Try to download several times
             let trycount  = 0;
-            while (trycount < settings.tryCount){ 
+            while (trycount < settings.downloadRetryCount){ 
                 fileData = await downloadImage(link);
                 logError("\r\n\nDownloading (try): "+trycount+"\r\n\n");
                 if (fileData !== null){break;}
@@ -97,7 +97,7 @@ export function imageTagProcessor(app: Plugin,
          }
 
          
-         if( Math.round(fileData.byteLength/1024) < settings.filesizeLimit) {
+         if( Math.round(fileData.byteLength/1024) < settings.minFileSizeKB) {
             logError("Lower limit of the file size!", false);
             return null;
          }
@@ -114,17 +114,17 @@ export function imageTagProcessor(app: Plugin,
    
 
  
-    if (fileExt == "png" && settings.PngToJpeg) {
+    if (fileExt == "png" && settings.compressImage) {
  
 
       let compType = "image/jpeg";
    
-      if (settings.ImgCompressionType == "image/webp") {
+      if (settings.compressionFormat == "image/webp") {
          compType = "image/webp";
       }
 
       const blob = new Blob([new Uint8Array(fileData)]);
-      fileData = await blobToJpegArrayBuffer(blob, settings.JpegQuality*0.01, compType)
+      fileData = await blobToJpegArrayBuffer(blob, settings.compressionQuality*0.01, compType)
 
       logError("arbuf: ")
       logError(fileData)
@@ -154,7 +154,7 @@ export function imageTagProcessor(app: Plugin,
                 let pathMd = rdir[1];
                    
 
-          if (settings.addNameOfFile  && protocol == "file:") {
+          if (settings.appendOriginalName  && protocol == "file:") {
 
                         if (!app.app.vault.getConfig("useMarkdownLinks")) {
 
@@ -176,16 +176,16 @@ export function imageTagProcessor(app: Plugin,
               if (!app.app.vault.getConfig("useMarkdownLinks")){
                 
                 // image caption
-                (!settings.useCaptions || !caption.length) ? caption="" : caption="\|"+caption;
+                (!settings.preserveCaptions || !caption.length) ? caption="" : caption="\|"+caption;
                 
                 // image size has higher priority
-                (!settings.useCaptions || !imgsize.length) ? caption="" : caption="\|"+imgsize;
+                (!settings.preserveCaptions || !imgsize.length) ? caption="" : caption="\|"+imgsize;
 
                  return  [match, `![[${pathWiki}${caption}]]`, `${shortName}`];
               }
               
               else{
-                ( !settings.useCaptions || !caption.length ) ? caption="" : caption=" "+caption;
+                ( !settings.preserveCaptions || !caption.length ) ? caption="" : caption=" "+caption;
                  return [match,`![${anchor}](${pathMd}${caption})`, `${shortName}`];
               }
 
@@ -237,7 +237,7 @@ export async function getRDir(
 
 
 
-  switch (settings.pathInTags) {
+  switch (settings.linkPathFormat) {
     case "baseFileName":
       pathWiki = pathMd = parsedPathE["basen"];
       break;
@@ -267,10 +267,10 @@ export async function getMDir(app: App,
 
     const notePath = noteFile.parent.path;
     const date = new Date();
-    const current_date = moment().format(settings.DateFormat); 
+    const current_date = moment().format(settings.dateFormat); 
     const obsmediadir = app.vault.getConfig("attachmentFolderPath");
-    const mediadir = settings.mediaRootDir;
-    var attdir = settings.saveAttE;
+    const mediadir = settings.mediaFolderPath;
+    var attdir = settings.attachmentSaveLocation;
     if (defaultdir) { attdir  = ""};
     let root="/";
 
@@ -333,13 +333,13 @@ async function chooseFileName(
   settings: ISettings
 ): Promise<{ fileName: string; needWrite: boolean }> {
   const parsedUrl = new URL(link);
-  const ignoredExt = settings.ignoredExt.split("|");
+  const ignoredExt = settings.excludedExtensions.split("|");
   let fileExt = await getFileExt(contentData, parsedUrl.pathname);
   logError("file: "+link+" content: "+contentData+" file ext: "+fileExt,false);
   
 
  
-  if (fileExt == "unknown" && !settings.downUnknown) {
+  if (fileExt == "unknown" && !settings.downloadUnknownTypes) {
     return { fileName: "", needWrite: false };
     }
   
@@ -356,7 +356,7 @@ async function chooseFileName(
   let needWrite = true;
   let fileName = "";
 
-  if (settings.useTimestampNameForNewAtt) {
+  if (settings.useTimestampNaming) {
     const folder = app.vault.getAbstractFileByPath(dir);
     if (folder instanceof TFolder) {
       for (const child of folder.children) {

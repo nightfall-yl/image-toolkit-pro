@@ -112,7 +112,7 @@ export const deleteFilesInTheList = async (
   settings: ISettings,
   app: App
 ): Promise<{ deletedImages: number; textToView: string }> => {
-  const deleteOption = settings.clearUnusedDeleteOption;
+  const deleteOption = settings.deleteDestination;
   let deletedImages = 0;
   let textToView = "";
 
@@ -139,8 +139,8 @@ export const deleteFilesInTheList = async (
 };
 
 const fileIsInExcludedFolder = (file: TFile, settings: ISettings): boolean => {
-  const excludedFoldersSettings = settings.ExcludedFoldersList;
-  const excludeSubfolders = settings.clearUnusedExcludeSubfolders;
+  const excludedFoldersSettings = settings.excludedFolders;
+  const excludeSubfolders = settings.excludeSubfolders;
 
   if (excludedFoldersSettings.trim() === "") {
     return false;
