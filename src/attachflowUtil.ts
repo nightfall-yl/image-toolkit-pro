@@ -1,4 +1,4 @@
-import { App, FuzzyMatch, FuzzySuggestModal, Modal, Notice, Setting, TFile, TFolder, Vault, MarkdownView } from "obsidian";
+import { App, Modal, Notice, Setting, TFile, TFolder, MarkdownView } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { ISettings, isDebugMode, setDebugMode } from "./config";
 
@@ -227,14 +227,6 @@ export const deleteCurTargetLink = (
   new Notice(`当前${mode}中找到多个匹配链接，请手动删除！`, 0);
 };
 
-export const handlerMoveFile = async (plugin: AttachFlowHost, fileBaseName: string, currentMd: TFile) => {
-  const targetFile = getFileByBaseName(plugin, currentMd, fileBaseName);
-  if (!targetFile) {
-    return;
-  }
-  new MoveFileToFolderSuggester(plugin.app, targetFile).open();
-};
-
 export const handlerRenameFile = (plugin: AttachFlowHost, fileBaseName: string, currentMd: TFile) => {
   const targetFile = getFileByBaseName(plugin, currentMd, fileBaseName);
   if (!targetFile) {
@@ -383,55 +375,5 @@ class RenameModal extends Modal {
   onClose() {
     document.removeEventListener("mousedown", this.outsideClickHandler, true);
     this.contentEl.empty();
-  }
-}
-
-class MoveFileToFolderSuggester extends FuzzySuggestModal<string> {
-  private folderList: Set<string>;
-  targetFile: TFile;
-
-  constructor(app: App, file: TFile) {
-    super(app);
-    this.folderList = this.getAllFolders(app.vault);
-    this.targetFile = file;
-  }
-
-  getAllFolders(vault: Vault): Set<string> {
-    const folders = new Set<string>();
-    vault.getAllLoadedFiles().forEach((file) => {
-      if (file instanceof TFolder) {
-        folders.add(file.path);
-      }
-    });
-    return folders;
-  }
-
-  getItems(): string[] {
-    return Array.from(this.folderList).sort();
-  }
-
-  getItemText(item: string): string {
-    return item;
-  }
-
-  async onChooseItem(item: string): Promise<void> {
-    if (this.targetFile.parent?.path === item) {
-      new Notice("文件已经在该文件夹中。", 3000);
-      return;
-    }
-
-    const chosenFolder = item.endsWith("/") ? item : `${item}/`;
-    const newPath = `${chosenFolder}${this.targetFile.name}`;
-    this.app.vault.adapter.exists(newPath).then((exists) => {
-      if (exists) {
-        new Notice(`移动失败，${newPath} 已存在。`);
-      } else {
-        this.app.fileManager.renameFile(this.targetFile, newPath);
-      }
-    });
-  }
-
-  renderSuggestion(item: FuzzyMatch<string>, el: HTMLElement): void {
-    el.innerText = item.item;
   }
 }

@@ -13,7 +13,6 @@ import { DeleteAllLogsModal } from "./attachflowModal";
 import {
   deleteCurTargetLink,
   handlerDelFileNew,
-  handlerMoveFile,
   handlerRenameFile,
   print,
   setDebug,
@@ -629,14 +628,6 @@ export class AttachFlowFeature {
       })
     );
 
-    if (this.plugin.settings.showMoveFileMenu) {
-      menu.addItem((item: MenuItem) =>
-        item.setIcon("folder-tree").setTitle("移动文件到...").onClick(() => {
-          handlerMoveFile(this.plugin, fileBaseName, currentMd);
-        })
-      );
-    }
-
     menu.addItem((item: MenuItem) =>
       item.setIcon("trash-2").setTitle("删除文件及对应链接").onClick(async () => {
         await handlerDelFileNew(this.plugin, fileBaseName, currentMd, targetType, targetPos, inTable, inCallout);
@@ -805,9 +796,6 @@ export class AttachFlowFeature {
 
     const isLinux = navigator.userAgent.toLowerCase().includes("linux");
     let offset = isLinux ? -138 : -163;
-    if (this.plugin.settings.showMoveFileMenu) {
-      offset -= 25;
-    }
     if (inTable && !inPreview) {
       menu.showAtPosition({ x: event.pageX, y: event.pageY + offset });
     } else {

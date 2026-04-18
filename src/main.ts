@@ -132,10 +132,14 @@ export default class LocalImagesPlugin extends Plugin {
     return null
   }
 
-  private async buildTimestampedAttachmentPath(folderPath: string, extension: string): Promise<string> {
+  private async buildTimestampedAttachmentPath(
+    folderPath: string,
+    extension: string,
+    hash?: string | null
+  ): Promise<string> {
     let candidatePath = ""
     do {
-      candidatePath = pathJoin([folderPath, generateTimestampRandomName(extension)])
+      candidatePath = pathJoin([folderPath, generateTimestampRandomName(extension, hash)])
     } while (await this.app.vault.adapter.exists(candidatePath))
 
     return candidatePath
@@ -172,30 +176,11 @@ export default class LocalImagesPlugin extends Plugin {
 
     this.refreshRibbonIcons()
 
-    if (!this.settings.hideExtraCommands) {
-
-      this.addCommand({
-        id: "set-title-as-name",
-        name: "Set the first found # header as a note name.",
-        callback: this.setTitleAsName,
-      })
-
+    if (this.settings.showBatchCommands) {
       this.addCommand({
         id: "download-images-all",
         name: "Localize attachments for all your notes (plugin folder)",
         callback: this.openProcessAllModal,
-      })
-
-      this.addCommand({
-        id: "convert-selection-to-URI",
-        name: "Convert selection to URI",
-        callback: this.convertSelToURI,
-      })
-
-      this.addCommand({
-        id: "convert-selection-to-md",
-        name: "Convert selection from html to markdown",
-        callback: this.convertSelToMD,
       })
 
       this.addCommand({
@@ -913,7 +898,7 @@ export default class LocalImagesPlugin extends Plugin {
                   if (duplicateFile) {
                     newpath = duplicateFile.path
                   } else if (this.settings.useTimestampNaming) {
-                    newpath = await this.buildTimestampedAttachmentPath(mdir, compExt)
+                    newpath = await this.buildTimestampedAttachmentPath(mdir, compExt, newMD5)
                   } else {
                     newpath = pathJoin([mdir, cFileName(path.parse(el.link)?.name + compExt)])
                   }
@@ -925,7 +910,7 @@ export default class LocalImagesPlugin extends Plugin {
                 if (duplicateFile) {
                   newpath = duplicateFile.path
                 } else {
-                  newpath = await this.buildTimestampedAttachmentPath(mdir, path.extname(el.link))
+                  newpath = await this.buildTimestampedAttachmentPath(mdir, path.extname(el.link), oldMD5)
                 }
                 newlink = await getRDir(note, this.settings, newpath)
 
@@ -1025,43 +1010,6 @@ export default class LocalImagesPlugin extends Plugin {
 
   }
 
-
-
-
-
-  private setTitleAsName = async () => {
-    try {
-      const noteFile = this.getCurrentNote()
-      const fileData = await this.app.vault.cachedRead(noteFile)
-      const title = fileData.match(/^#{1,6} .+?($|\n)/gm)
-      var ind = 0
-      if (title !== null) {
-        const newName = cFileName(trimAny(title[0].toString(), ["#", " "])).slice(0, 200)
-        var fullPath = pathJoin([noteFile.parent.path, newName + ".md"])
-        var fExist = await this.app.vault.exists(fullPath)
-        if (trimAny(noteFile.path, ["\\", "/"]) != trimAny(fullPath, ["\\", "/"])) {
-          while (fExist) {
-            ind++
-            var fullPath = pathJoin([noteFile.parent.path, newName + " (" + ind + ")" + ".md"])
-            var fExist = await this.app.vault.exists(fullPath)
-          }
-          await this.app.vault.rename(noteFile, fullPath)
-
-          showBalloon(`The note was renamed to ` + fullPath, this.settings.showNotifications)
-
-        }
-      }
-
-    } catch (e) {
-      showBalloon(`Cannot rename.`, this.settings.showNotifications)
-      return
-    }
-  }
-
-
-
-
-
   setupNewMdFilesProcInterval() {
     logError("func setupNewFilesProcInterval: \r\n")
     window.clearInterval(this.newfProcInt)
@@ -1072,28 +1020,6 @@ export default class LocalImagesPlugin extends Plugin {
     )
     this.registerInterval(this.newfProcInt)
   }
-
-  private convertSelToURI = async () => {
-    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
-    if (!editor) {
-      showBalloon("Cannot access the active editor.", this.settings.showNotifications)
-      return
-    }
-
-    editor.replaceSelection(encObsURI(editor.getSelection()))
-  }
-
-  private convertSelToMD = async () => {
-    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
-    if (!editor) {
-      showBalloon("Cannot access the active editor.", this.settings.showNotifications)
-      return
-    }
-
-    editor.replaceSelection(htmlToMarkdown(editor.getSelection()))
-  }
-
-
 
   processModifiedQueue = async () => {
     const iteration = this.modifiedQueue.iterationQueue();
@@ -1127,7 +1053,15 @@ export default class LocalImagesPlugin extends Plugin {
 
   async loadSettings() {
     const savedSettings = (await this.loadData()) ?? {}
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedSettings)
+    const migratedSettings = { ...savedSettings }
+
+    if (typeof savedSettings.hideExtraCommands === "boolean") {
+      if (savedSettings.showBatchCommands === undefined) {
+        migratedSettings.showBatchCommands = !savedSettings.hideExtraCommands
+      }
+    }
+
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, migratedSettings)
     setDebugMode(this.settings.debugMode)
     this.setupQueueInterval()
   }

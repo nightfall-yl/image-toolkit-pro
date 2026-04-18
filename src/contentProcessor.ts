@@ -376,7 +376,7 @@ async function chooseFileName(
     if (!fileName) {
       let suggestedName = "";
       do {
-        suggestedName = pathJoin([dir, cleanFileName(generateTimestampRandomName(fileExt))]);
+        suggestedName = pathJoin([dir, cleanFileName(generateTimestampRandomName(fileExt, baseName))]);
       } while (await adapter.exists(suggestedName, false));
 
       fileName = suggestedName;

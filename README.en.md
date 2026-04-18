@@ -7,7 +7,7 @@
 ## Highlights
 
 - Image localization: download web images, handle pasted / dragged media, save base64 images
-- Attachment organization: multiple save locations, link styles, timestamp naming, deduplication
+- Attachment organization: multiple save locations, link styles, `YYYYMMDD-HHmmss-md5-first-6` naming, deduplication
 - Attachment cleanup: unused images, unused attachments, and unlinked attachments in the current note folder
 - Image interaction: context menu, click-to-preview, drag-to-resize, navigator highlight
 - Source-note jump: image navigator or image-tab context menu supports `Go to Source Note`
@@ -21,7 +21,7 @@ This version is built on `obsidian-local-images-plus` and integrates:
 
 It also includes:
 
-- top-navigation settings UI: `General / Localize / Cleanup / Preview`
+- top-navigation settings UI: `General / Localize / Preview / Cleanup`
 - settings-page language automatically follows Obsidian's system language
 - a cleanup `Ribbon` shortcut
 - the command palette as the full entry point
@@ -30,13 +30,19 @@ It also includes:
 
 Command palette entries are intentionally kept in English.
 
+Core commands:
+
 - `Localize attachments for the current note (plugin folder)`
 - `Localize attachments for the current note (Obsidian folder)`
-- `Localize attachments for all your notes (plugin folder)`
 - `Clear Unused Images in Vault`
 - `Clear Unused Attachments in Vault`
-- `Clear Unlinked Attachments in Current Note Folder (Next to Note mode)`
 - `Delete Current Note and Its Attachments`
+
+Optional commands:
+
+- Batch commands (visibility can be controlled in settings)
+  - `Localize attachments for all your notes (plugin folder)`
+  - `Clear Unlinked Attachments in Current Note Folder (Next to Note mode)`
 
 Notes:
 
@@ -59,42 +65,43 @@ It triggers:
 ### General
 
 - notifications
-- extra command visibility
 - cleanup Ribbon visibility
 - automatic processing and interval
 - process newly created Markdown files
-- process newly created attachments
-- timestamp naming for new attachments
-- developer options (file-type regex, debug mode)
+- batch commands: show batch commands
+- developer options (debug mode)
 
 ### Localize
 
+- trigger: process newly created attachments
 - download retry count
 - unknown file download
 - image compression
 - compression format and quality
 - minimum file size
 - excluded extensions
-- link title and original filename preservation
-- link path style
-- date format
-- new attachment save location and media folder template
+- naming: `YYYYMMDD-HHmmss-md5-first-6`
+- path: new attachment save location and media folder template
+- path: link path style
+- path: date format
+- other: link title preservation
+- advanced options: original filename tag, media-folder sync, Obsidian attachment-folder compatibility
+
+### Preview
+
+- click-to-preview
+- preview ratio
+- drag-to-resize
+- resize step
+- delete current note and its attachments
+- image navigator or image-tab context menu supports `Go to Source Note`
 
 ### Cleanup
 
 - deletion target (trash / permanent delete)
 - operation log modal
-- exclude subfolders
 - excluded folder list
-
-### Preview
-
-- attachment deletion destination (trash / permanent delete)
-- show "Move file to..." menu
-- click-to-preview
-- preview ratio
-- drag-to-resize
-- resize step
+- exclude subfolders
 
 ## Supported Image Formats
 
@@ -125,7 +132,7 @@ Notes:
 
 - plugin name: `ImgBox Pro`
 - plugin id: `imgbox-pro`
-- version: `26.4.2`
+- version: `26.4.4`
 - minimum Obsidian version: `1.0.3`
 - desktop only: `true`
 

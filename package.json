@@ -1,6 +1,6 @@
 {
   "name": "imgbox-pro",
-  "version": "26.4.2",
+  "version": "26.4.4",
   "description": "ImgBox Pro is an Obsidian desktop plugin for localizing images, cleaning unused attachments, and enhancing image interactions.",
   "main": "build/main.js",
   "scripts": {

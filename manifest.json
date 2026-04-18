@@ -1,7 +1,7 @@
 {
   "id": "imgbox-pro",
   "name": "ImgBox Pro",
-  "version": "26.4.2",
+  "version": "26.4.4",
   "minAppVersion": "1.0.3",
   "description": "ImgBox Pro searches for external media links in your notes, downloads and saves them locally, adjusts note links, and includes unused attachment cleanup tools.",
   "author": "nightfall-yl",

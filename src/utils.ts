@@ -96,20 +96,27 @@ export function md5Sig(contentData: ArrayBuffer = undefined) {
 
 }
 
-export function generateTimestampRandomName(extension: string, date = new Date()): string {
+export function generateTimestampRandomName(
+  extension: string,
+  hash?: string | null,
+  date = new Date()
+): string {
   const year = date.getFullYear().toString();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const seconds = date.getSeconds().toString().padStart(2, "0");
-  const randomCharset = "abcdefghijklmnopqrstuvwxyz0123456789";
-  const randomCode = Array.from({ length: 6 }, () =>
-    randomCharset[Math.floor(Math.random() * randomCharset.length)]
-  ).join("");
+  const normalizedHash = (hash ?? "").replace(/_MD5$/i, "");
+  const suffix =
+    normalizedHash.length >= 6
+      ? normalizedHash.slice(0, 6)
+      : Array.from({ length: 6 }, () =>
+          "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]
+        ).join("");
   const normalizedExtension = extension.startsWith(".") ? extension : `.${extension}`;
 
-  return `${year}${month}${day}-${hours}${minutes}${seconds}-${randomCode}${normalizedExtension}`;
+  return `${year}${month}${day}-${hours}${minutes}${seconds}-${suffix}${normalizedExtension}`;
 }
 
 

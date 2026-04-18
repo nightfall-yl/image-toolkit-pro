@@ -19,7 +19,6 @@ import {
 } from "./config"
 
 import LocalImagesPlugin from "./main"
-import safeRegex from "safe-regex"
 
 type SettingsSection = {
   id: string
@@ -35,31 +34,32 @@ function getObsidianLang(): "zh-CN" | "en" {
 
 const LOCALE_TEXT: Record<string, Record<string, string>> = {
   "zh-CN": {
-    subtitle: "统一管理附件本地化、未使用文件清理和图片预览交互增强。",
     navGeneral: "通用",
     navLocalize: "图片本地化",
-    navCleanup: "图片清理",
     navPreview: "图片预览",
+    navCleanup: "图片清理",
     navAdvanced: "开发者选项",
     generalTitle: "通用",
     generalDesc: "插件显示与自动处理相关选项。",
     showNotifications: "显示通知",
     showNotificationsDesc: "处理页面后显示通知。",
-    hideExtraCommands: "隐藏附加命令",
-    hideExtraCommandsDesc: "重新加载插件后，从命令面板中隐藏附加命令。此设置不影响清理 Ribbon 图标。",
+    toolsTitle: "批量命令",
+    toolsDesc: "控制批量命令的显示。",
+    showBatchCommands: "显示批量命令",
+    showBatchCommandsDesc: "重新加载插件后，显示批量本地化和当前笔记目录清理等批量命令。",
     showCleanupRibbon: "显示图片清理 Ribbon 图标",
     showCleanupRibbonDesc: "在左侧功能区显示图片清理快捷按钮。它是\u201cClear Unused Images in Vault\u201d的快捷入口，按钮文案会跟随 Obsidian 显示语言切换。",
     autoProcess: "自动处理",
     autoProcessDesc: "在新建、复制和粘贴时自动处理笔记。",
     autoProcessInterval: "自动处理间隔",
     autoProcessIntervalDesc: "自动处理的时间间隔，单位为秒。",
-    autoProcessIntervalInvalid: "请输入 5 到 3600 之间的正整数！",
+    autoProcessIntervalInvalid: "请输入 3 到 3600 之间的正整数！",
     processNewMarkdown: "处理所有新建 Markdown 文件",
-    processNewMarkdownDesc: "处理新建或同步得到、且符合包含规则的 Markdown 类文件。",
+    processNewMarkdownDesc: "处理新建或同步得到的 Markdown 类文件。",
     processNewAttachments: "处理所有新附件",
     processNewAttachmentsDesc: "将所有新附件从 Obsidian 默认附件目录移动到插件管理的位置。",
-    useTimestampNaming: "新附件使用时间命名",
-    useTimestampNamingDesc: "对新粘贴或拖入的附件使用 YYYYMMDD-HHmmss-随机6位 命名，同时保留去重能力。",
+    useTimestampNaming: "新附件使用时间+MD5命名",
+    useTimestampNamingDesc: "对新粘贴或拖入的附件使用 YYYYMMDD-HHmmss-md5前6位 命名，同时保留去重能力。",
     localizeTitle: "图片本地化",
     localizeDesc: "控制附件下载、压缩、命名和保存路径。",
     downloadRetryCount: "单个附件重试次数",
@@ -100,6 +100,8 @@ const LOCALE_TEXT: Record<string, Record<string, string>> = {
     syncMediaFolderDesc: "当关联笔记发生变化时，同时移动或重命名媒体文件夹。请谨慎使用。",
     mediaFolderPath: "媒体文件夹",
     mediaFolderPathDesc: "用于存放下载媒体文件的文件夹。",
+    localizeAdvancedTitle: "高级选项",
+    localizeAdvancedDesc: "兼容性、附加标签和目录同步等低频选项。",
     skipObsidianFolderCreation: "不创建 Obsidian 附件文件夹",
     skipObsidianFolderCreationDesc: "用于兼容其他插件，但可能导致部分工作流行为异常。",
     cleanupTitle: "图片清理",
@@ -118,8 +120,6 @@ const LOCALE_TEXT: Record<string, Record<string, string>> = {
     excludedFoldersPlaceholder: "每行输入一个完整路径，例如 RootFolder/Subfolder",
     previewTitle: "图片预览",
     previewDesc: "右键菜单、拖拽缩放和点击看大图等图片预览增强功能。",
-    showMoveFileMenu: "显示\u201c移动文件到...\u201d",
-    showMoveFileMenuDesc: "在附件右键菜单中添加\u201c移动文件到...\u201d操作。",
     clickPreviewEnabled: "单击预览图片",
     clickPreviewEnabledDesc: "单击图片中间区域可打开可缩放的预览视图，再次单击可关闭预览；边缘区域保留给尺寸调整。",
     previewAdaptiveRatio: "自适应显示比例",
@@ -132,38 +132,36 @@ const LOCALE_TEXT: Record<string, Record<string, string>> = {
     dragResizeStepInvalid: "请输入正整数或 0。",
     advancedTitle: "开发者选项",
     advancedDesc: "开发调试与底层处理规则相关选项。",
-    includePattern: "包含规则",
-    includePatternDesc: "仅处理扩展名匹配该规则的文件，例如 `md|canvas`。",
-    unsafeRegex: "不安全的正则！详见 https://www.npmjs.com/package/safe-regex",
     debugMode: "调试模式",
     debugModeDesc: "在控制台输出插件调试信息。",
   },
   en: {
-    subtitle: "Manage attachment localization, unused file cleanup, and preview Image interactions in one place.",
     navGeneral: "General",
     navLocalize: "Localize",
-    navCleanup: "Cleanup",
     navPreview: "Preview",
+    navCleanup: "Cleanup",
     navAdvanced: "Developer Options",
     generalTitle: "General",
     generalDesc: "Plugin display and automatic processing options.",
     showNotifications: "Show notifications",
     showNotificationsDesc: "Show notifications after pages are processed.",
-    hideExtraCommands: "Hide extra commands",
-    hideExtraCommandsDesc: "Hide extra commands from the command palette after reloading the plugin. This does not affect the cleanup Ribbon icon.",
+    toolsTitle: "Batch Commands",
+    toolsDesc: "Control whether batch commands are shown.",
+    showBatchCommands: "Show batch commands",
+    showBatchCommandsDesc: "After reloading the plugin, show batch localization and current-note-folder cleanup commands.",
     showCleanupRibbon: "Show cleanup Ribbon icon",
     showCleanupRibbonDesc: "Show the cleanup shortcut in the left Ribbon. It is a shortcut for \"Clear Unused Images in Vault\", and its label follows Obsidian's display language.",
     autoProcess: "Automatic processing",
     autoProcessDesc: "Automatically process notes on create, copy, and paste.",
     autoProcessInterval: "Automatic processing interval",
     autoProcessIntervalDesc: "The interval for automatic processing, in seconds.",
-    autoProcessIntervalInvalid: "Please enter an integer between 5 and 3600.",
+    autoProcessIntervalInvalid: "Please enter an integer between 3 and 3600.",
     processNewMarkdown: "Process all new Markdown files",
-    processNewMarkdownDesc: "Process newly created or synced Markdown-like files that match the include pattern.",
+    processNewMarkdownDesc: "Process newly created or synced Markdown-like files.",
     processNewAttachments: "Process all new attachments",
     processNewAttachmentsDesc: "Move new attachments from the default Obsidian attachment folder into the plugin-managed location.",
-    useTimestampNaming: "Use timestamp names for new attachments",
-    useTimestampNamingDesc: "Rename newly pasted or dropped attachments as YYYYMMDD-HHmmss-random6 while keeping deduplication.",
+    useTimestampNaming: "Use time + MD5 names for new attachments",
+    useTimestampNamingDesc: "Rename newly pasted or dropped attachments as YYYYMMDD-HHmmss-md5-first-6 while keeping deduplication.",
     localizeTitle: "Image Localization",
     localizeDesc: "Control downloading, compression, naming, and storage paths for attachments.",
     downloadRetryCount: "Retry count per attachment",
@@ -204,6 +202,8 @@ const LOCALE_TEXT: Record<string, Record<string, string>> = {
     syncMediaFolderDesc: "When the related note changes, also move or rename the media folder. Use with caution.",
     mediaFolderPath: "Media folder",
     mediaFolderPathDesc: "Folder used to store downloaded media files.",
+    localizeAdvancedTitle: "Advanced options",
+    localizeAdvancedDesc: "Low-frequency options for compatibility, extra labels, and folder sync.",
     skipObsidianFolderCreation: "Do not create Obsidian attachment folder",
     skipObsidianFolderCreationDesc: "Improves compatibility with other plugins, but may affect some workflows.",
     cleanupTitle: "Image Cleanup",
@@ -222,8 +222,6 @@ const LOCALE_TEXT: Record<string, Record<string, string>> = {
     excludedFoldersPlaceholder: "Enter one full path per line, for example RootFolder/Subfolder",
     previewTitle: "Image Preview",
     previewDesc: "Enhancements for right-click menus, drag resizing, and click-to-zoom previews.",
-    showMoveFileMenu: "Show \"Move file to...\"",
-    showMoveFileMenuDesc: "Add the \"Move file to...\" action to the attachment right-click menu.",
     clickPreviewEnabled: "Click to preview image",
     clickPreviewEnabledDesc: "Click the center area of an image to open a zoomable preview, and click again to close it. The edges stay available for resizing.",
     previewAdaptiveRatio: "Adaptive display ratio",
@@ -236,9 +234,6 @@ const LOCALE_TEXT: Record<string, Record<string, string>> = {
     dragResizeStepInvalid: "Please enter a positive integer or 0.",
     advancedTitle: "Developer Options",
     advancedDesc: "Developer-facing debugging and low-level processing options.",
-    includePattern: "Include pattern",
-    includePatternDesc: "Only process files whose extensions match this pattern, for example `md|canvas`.",
-    unsafeRegex: "Unsafe regex. See https://www.npmjs.com/package/safe-regex",
     debugMode: "Debug mode",
     debugModeDesc: "Output plugin debug information to the console.",
   },
@@ -324,15 +319,11 @@ export default class SettingTab extends PluginSettingTab {
     const t = (key: string) => LOCALE_TEXT[lang][key] ?? key
 
     containerEl.createEl("h1", { text: APP_NAME })
-    containerEl.createEl("p", {
-      cls: "lip-settings-subtitle",
-      text: t("subtitle"),
-    })
     const sections: SettingsSection[] = [
       { id: "general", label: t("navGeneral"), icon: "settings-2" },
       { id: "localize", label: t("navLocalize"), icon: "panel-left" },
-      { id: "cleanup", label: t("navCleanup"), icon: "list" },
       { id: "preview", label: t("navPreview"), icon: "image" },
+      { id: "cleanup", label: t("navCleanup"), icon: "list" },
     ]
 
     const navEl = containerEl.createDiv({ cls: "lip-settings-nav" })
@@ -384,19 +375,6 @@ export default class SettingTab extends PluginSettingTab {
       )
 
     new Setting(generalEl)
-      .setName(t("hideExtraCommands"))
-      .setDesc(t("hideExtraCommandsDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.hideExtraCommands)
-          .onChange(async (value) => {
-            this.plugin.settings.hideExtraCommands = value
-            await this.plugin.saveSettings()
-            this.plugin.refreshRibbonIcons()
-          })
-      )
-
-    new Setting(generalEl)
       .setName(t("showCleanupRibbon"))
       .setDesc(t("showCleanupRibbonDesc"))
       .addToggle((toggle) =>
@@ -426,7 +404,7 @@ export default class SettingTab extends PluginSettingTab {
       name: t("autoProcessInterval"),
       desc: t("autoProcessIntervalDesc"),
       value: this.plugin.settings.autoProcessInterval,
-      min: 5,
+      min: 3,
       max: 3600,
       integer: true,
       onValidChange: async (value) => {
@@ -449,26 +427,41 @@ export default class SettingTab extends PluginSettingTab {
           })
       )
 
-    new Setting(generalEl)
-      .setName(t("processNewAttachments"))
-      .setDesc(t("processNewAttachmentsDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.processNewAttachments)
-          .onChange(async (value) => {
-            this.plugin.settings.processNewAttachments = value
-            await this.plugin.saveSettings()
-          })
-      )
+    const toolsDetailsEl = generalEl.createDiv({
+      cls: "lip-settings-collapsible",
+    })
+    const toolsSummaryEl = toolsDetailsEl.createDiv({
+      cls: "lip-settings-collapsible-summary",
+      attr: {
+        role: "button",
+        tabindex: "0",
+        "aria-expanded": "false",
+      },
+    })
+    const toolsSummaryCopy = toolsSummaryEl.createDiv({
+      cls: "lip-settings-collapsible-copy",
+    })
+    toolsSummaryCopy.createSpan({
+      cls: "lip-settings-collapsible-title",
+      text: t("toolsTitle"),
+    })
+    toolsSummaryCopy.createEl("p", {
+      cls: "lip-settings-collapsible-desc",
+      text: t("toolsDesc"),
+    })
+    const toolsContentEl = toolsDetailsEl.createDiv({
+      cls: "lip-settings-collapsible-content",
+    })
+    toolsContentEl.hide()
 
-    new Setting(generalEl)
-      .setName(t("useTimestampNaming"))
-      .setDesc(t("useTimestampNamingDesc"))
+    new Setting(toolsContentEl)
+      .setName(t("showBatchCommands"))
+      .setDesc(t("showBatchCommandsDesc"))
       .addToggle((toggle) =>
         toggle
-          .setValue(this.plugin.settings.useTimestampNaming)
+          .setValue(this.plugin.settings.showBatchCommands)
           .onChange(async (value) => {
-            this.plugin.settings.useTimestampNaming = value
+            this.plugin.settings.showBatchCommands = value
             await this.plugin.saveSettings()
           })
       )
@@ -517,6 +510,18 @@ export default class SettingTab extends PluginSettingTab {
       },
       invalidMessage: t("downloadRetryCountInvalid"),
     })
+
+    new Setting(localizeEl)
+      .setName(t("processNewAttachments"))
+      .setDesc(t("processNewAttachmentsDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.processNewAttachments)
+          .onChange(async (value) => {
+            this.plugin.settings.processNewAttachments = value
+            await this.plugin.saveSettings()
+          })
+      )
 
     new Setting(localizeEl)
       .setName(t("downloadUnknownTypes"))
@@ -596,6 +601,18 @@ export default class SettingTab extends PluginSettingTab {
       )
 
     new Setting(localizeEl)
+      .setName(t("useTimestampNaming"))
+      .setDesc(t("useTimestampNamingDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.useTimestampNaming)
+          .onChange(async (value) => {
+            this.plugin.settings.useTimestampNaming = value
+            await this.plugin.saveSettings()
+          })
+      )
+
+    new Setting(localizeEl)
       .setName(t("preserveCaptions"))
       .setDesc(t("preserveCaptionsDesc"))
       .addToggle((toggle) =>
@@ -608,13 +625,34 @@ export default class SettingTab extends PluginSettingTab {
       )
 
     new Setting(localizeEl)
-      .setName(t("appendOriginalName"))
-      .setDesc(t("appendOriginalNameDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.appendOriginalName)
+      .setName(t("attachmentSaveLocation"))
+      .setDesc(t("attachmentSaveLocationDesc"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("obsFolder", t("followObsidian"))
+          .addOption("inFolderBelow", t("saveToRoot"))
+          .addOption("nextToNoteS", t("saveNextToNote"))
+          .setValue(this.plugin.settings.attachmentSaveLocation)
           .onChange(async (value) => {
-            this.plugin.settings.appendOriginalName = value
+            this.plugin.settings.attachmentSaveLocation = value
+            await this.plugin.saveSettings()
+            this.toggleMediaFolderSettings(localizeEl)
+          })
+      )
+
+    new Setting(localizeEl)
+      .setName(t("mediaFolderPath"))
+      .setDesc(t("mediaFolderPathDesc"))
+      .setClass("media_folder_set")
+      .addText((text) =>
+        text
+          .setValue(this.plugin.settings.mediaFolderPath)
+          .onChange(async (value) => {
+            if (value.match(/(\)|\(|\"|\'|\#|\]|\[|\:|\>|\<|\*|\|)/g) !== null) {
+              displayError(t("unsafeFolderName"))
+              return
+            }
+            this.plugin.settings.mediaFolderPath = value
             await this.plugin.saveSettings()
           })
       )
@@ -651,22 +689,57 @@ export default class SettingTab extends PluginSettingTab {
       )
 
     new Setting(localizeEl)
-      .setName(t("attachmentSaveLocation"))
-      .setDesc(t("attachmentSaveLocationDesc"))
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("obsFolder", t("followObsidian"))
-          .addOption("inFolderBelow", t("saveToRoot"))
-          .addOption("nextToNoteS", t("saveNextToNote"))
-          .setValue(this.plugin.settings.attachmentSaveLocation)
+      .setName(t("preserveCaptions"))
+      .setDesc(t("preserveCaptionsDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.preserveCaptions)
           .onChange(async (value) => {
-            this.plugin.settings.attachmentSaveLocation = value
+            this.plugin.settings.preserveCaptions = value
             await this.plugin.saveSettings()
-            this.toggleMediaFolderSettings(localizeEl)
           })
       )
 
-    new Setting(localizeEl)
+    const localizeAdvancedDetailsEl = localizeEl.createDiv({
+      cls: "lip-settings-collapsible",
+    })
+    const localizeAdvancedSummaryEl = localizeAdvancedDetailsEl.createDiv({
+      cls: "lip-settings-collapsible-summary",
+      attr: {
+        role: "button",
+        tabindex: "0",
+        "aria-expanded": "false",
+      },
+    })
+    const localizeAdvancedSummaryCopy = localizeAdvancedSummaryEl.createDiv({
+      cls: "lip-settings-collapsible-copy",
+    })
+    localizeAdvancedSummaryCopy.createSpan({
+      cls: "lip-settings-collapsible-title",
+      text: t("localizeAdvancedTitle"),
+    })
+    localizeAdvancedSummaryCopy.createEl("p", {
+      cls: "lip-settings-collapsible-desc",
+      text: t("localizeAdvancedDesc"),
+    })
+    const localizeAdvancedContentEl = localizeAdvancedDetailsEl.createDiv({
+      cls: "lip-settings-collapsible-content",
+    })
+    localizeAdvancedContentEl.hide()
+
+    new Setting(localizeAdvancedContentEl)
+      .setName(t("appendOriginalName"))
+      .setDesc(t("appendOriginalNameDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.appendOriginalName)
+          .onChange(async (value) => {
+            this.plugin.settings.appendOriginalName = value
+            await this.plugin.saveSettings()
+          })
+      )
+
+    new Setting(localizeAdvancedContentEl)
       .setName(t("syncMediaFolder"))
       .setDesc(t("syncMediaFolderDesc"))
       .setClass("media_folder_set")
@@ -679,24 +752,7 @@ export default class SettingTab extends PluginSettingTab {
           })
       )
 
-    new Setting(localizeEl)
-      .setName(t("mediaFolderPath"))
-      .setDesc(t("mediaFolderPathDesc"))
-      .setClass("media_folder_set")
-      .addText((text) =>
-        text
-          .setValue(this.plugin.settings.mediaFolderPath)
-          .onChange(async (value) => {
-            if (value.match(/(\)|\(|\"|\'|\#|\]|\[|\:|\>|\<|\*|\|)/g) !== null) {
-              displayError(t("unsafeFolderName"))
-              return
-            }
-            this.plugin.settings.mediaFolderPath = value
-            await this.plugin.saveSettings()
-          })
-      )
-
-    new Setting(localizeEl)
+    new Setting(localizeAdvancedContentEl)
       .setName(t("skipObsidianFolderCreation"))
       .setDesc(t("skipObsidianFolderCreationDesc"))
       .addToggle((toggle) =>
@@ -708,97 +764,8 @@ export default class SettingTab extends PluginSettingTab {
           })
       )
 
-    // ===================== 图片清理 =====================
-    const cleanupEl = sectionEls.get("cleanup")!
-
-    new Setting(cleanupEl)
-      .setName(t("deleteDestination"))
-      .setDesc(t("deleteDestinationDesc"))
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("permanent", t("deletePermanent"))
-          .addOption(".trash", t("deleteObsidianTrash"))
-          .addOption("system-trash", t("deleteSystemTrash"))
-          .setValue(this.plugin.settings.deleteDestination)
-          .onChange(async (value) => {
-            this.plugin.settings.deleteDestination = value
-            await this.plugin.saveSettings()
-          })
-      })
-
-    new Setting(cleanupEl)
-      .setName(t("showOperationLogs"))
-      .setDesc(t("showOperationLogsDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showOperationLogs)
-          .onChange(async (value) => {
-            this.plugin.settings.showOperationLogs = value
-            await this.plugin.saveSettings()
-          })
-      )
-
-    new Setting(cleanupEl)
-      .setName(t("excludeSubfolders"))
-      .setDesc(t("excludeSubfoldersDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.excludeSubfolders)
-          .onChange(async (value) => {
-            this.plugin.settings.excludeSubfolders = value
-            await this.plugin.saveSettings()
-          })
-      )
-
-    new Setting(cleanupEl)
-      .setName(t("excludedFolders"))
-      .setDesc(t("excludedFoldersDesc"))
-      .addTextArea((text) => {
-        text
-          .setPlaceholder(t("excludedFoldersPlaceholder"))
-          .setValue(this.plugin.settings.excludedFolders)
-          .onChange(async (value) => {
-            const foldersArray = value.split(/\r?\n|\r|\n/g)
-            if (foldersArray.length >= 1) {
-              const regexconverted = trimAny(
-                foldersArray
-                  .map((folderPath) => {
-                    const cleaned = trimAny(folderPath, [" ", "|", "/", "\\"])
-                    if (cleaned !== "") {
-                      return `(^${cleaned}$)`
-                    }
-                    return ""
-                  })
-                  .join("|")
-                  .replace("\\", "/"),
-                [" ", "|", "/", "\\"]
-              )
-
-              this.plugin.settings.excludedFolders = value
-              this.plugin.settings.excludedFoldersRegexp = regexconverted
-              await this.plugin.saveSettings()
-              logError(`Excluded folders regex: ${regexconverted}`)
-            }
-          })
-
-        text.inputEl.rows = 5
-        text.inputEl.style.width = "100%"
-      })
-
     // ===================== 图片预览 =====================
     const previewEl = sectionEls.get("preview")!
-
-    new Setting(previewEl)
-      .setName(t("showMoveFileMenu"))
-      .setDesc(t("showMoveFileMenuDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showMoveFileMenu)
-          .onChange(async (value) => {
-            this.plugin.settings.showMoveFileMenu = value
-            await this.plugin.saveSettings()
-          })
-      )
 
     new Setting(previewEl)
       .setName(t("clickPreviewEnabled"))
@@ -853,42 +820,84 @@ export default class SettingTab extends PluginSettingTab {
       invalidMessage: t("dragResizeStepInvalid"),
     })
 
-    // ===================== 开发者选项（折叠内容） =====================
-    new Setting(advancedContentEl)
-      .setName(t("includePattern"))
-      .setDesc(t("includePatternDesc"))
-      .addText((text) =>
-        text
-          .setValue(this.plugin.settings.includePattern)
+    // ===================== 图片清理 =====================
+    const cleanupEl = sectionEls.get("cleanup")!
+
+    new Setting(cleanupEl)
+      .setName(t("deleteDestination"))
+      .setDesc(t("deleteDestinationDesc"))
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("permanent", t("deletePermanent"))
+          .addOption(".trash", t("deleteObsidianTrash"))
+          .addOption("system-trash", t("deleteSystemTrash"))
+          .setValue(this.plugin.settings.deleteDestination)
           .onChange(async (value) => {
-            const extArray = value.split("|")
-            if (extArray.length >= 1) {
-              const regexconverted = trimAny(
-                extArray
-                  .map((extension) => {
-                    const cleaned = trimAny(extension, [" ", "|"])
-                    if (cleaned !== "") {
-                      return `(?<${cleaned}>.*\\.${cleaned})`
-                    }
-                    return ""
-                  })
-                  .join("|"),
-                [" ", "|"]
-              )
+            this.plugin.settings.deleteDestination = value
+            await this.plugin.saveSettings()
+          })
+      })
 
-              if (!safeRegex(value)) {
-                displayError(t("unsafeRegex"))
-                return
-              }
-
-              this.plugin.settings.includePattern = value
-              this.plugin.settings.includePatternRegex = regexconverted
-              logError(regexconverted)
-              await this.plugin.saveSettings()
-            }
+    new Setting(cleanupEl)
+      .setName(t("showOperationLogs"))
+      .setDesc(t("showOperationLogsDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showOperationLogs)
+          .onChange(async (value) => {
+            this.plugin.settings.showOperationLogs = value
+            await this.plugin.saveSettings()
           })
       )
 
+    new Setting(cleanupEl)
+      .setName(t("excludedFolders"))
+      .setDesc(t("excludedFoldersDesc"))
+      .addTextArea((text) => {
+        text
+          .setPlaceholder(t("excludedFoldersPlaceholder"))
+          .setValue(this.plugin.settings.excludedFolders)
+          .onChange(async (value) => {
+            const foldersArray = value.split(/\r?\n|\r|\n/g)
+            if (foldersArray.length >= 1) {
+              const regexconverted = trimAny(
+                foldersArray
+                  .map((folderPath) => {
+                    const cleaned = trimAny(folderPath, [" ", "|", "/", "\\"])
+                    if (cleaned !== "") {
+                      return `(^${cleaned}$)`
+                    }
+                    return ""
+                  })
+                  .join("|")
+                  .replace("\\", "/"),
+                [" ", "|", "/", "\\"]
+              )
+
+              this.plugin.settings.excludedFolders = value
+              this.plugin.settings.excludedFoldersRegexp = regexconverted
+              await this.plugin.saveSettings()
+              logError(`Excluded folders regex: ${regexconverted}`)
+            }
+          })
+
+        text.inputEl.rows = 5
+        text.inputEl.style.width = "100%"
+      })
+
+    new Setting(cleanupEl)
+      .setName(t("excludeSubfolders"))
+      .setDesc(t("excludeSubfoldersDesc"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.excludeSubfolders)
+          .onChange(async (value) => {
+            this.plugin.settings.excludeSubfolders = value
+            await this.plugin.saveSettings()
+          })
+      )
+
+    // ===================== 开发者选项（折叠内容） =====================
     new Setting(advancedContentEl)
       .setName(t("debugMode"))
       .setDesc(t("debugModeDesc"))
@@ -918,6 +927,44 @@ export default class SettingTab extends PluginSettingTab {
       }
       evt.preventDefault()
       advancedSummaryEl.click()
+    })
+
+    toolsSummaryEl.addEventListener("click", () => {
+      const isOpen = !toolsDetailsEl.hasClass("is-open")
+      toolsDetailsEl.toggleClass("is-open", isOpen)
+      toolsSummaryEl.toggleClass("is-open", isOpen)
+      toolsSummaryEl.setAttr("aria-expanded", isOpen ? "true" : "false")
+      if (isOpen) {
+        toolsContentEl.show()
+      } else {
+        toolsContentEl.hide()
+      }
+    })
+    toolsSummaryEl.addEventListener("keydown", (evt) => {
+      if (evt.key !== "Enter" && evt.key !== " ") {
+        return
+      }
+      evt.preventDefault()
+      toolsSummaryEl.click()
+    })
+
+    localizeAdvancedSummaryEl.addEventListener("click", () => {
+      const isOpen = !localizeAdvancedDetailsEl.hasClass("is-open")
+      localizeAdvancedDetailsEl.toggleClass("is-open", isOpen)
+      localizeAdvancedSummaryEl.toggleClass("is-open", isOpen)
+      localizeAdvancedSummaryEl.setAttr("aria-expanded", isOpen ? "true" : "false")
+      if (isOpen) {
+        localizeAdvancedContentEl.show()
+      } else {
+        localizeAdvancedContentEl.hide()
+      }
+    })
+    localizeAdvancedSummaryEl.addEventListener("keydown", (evt) => {
+      if (evt.key !== "Enter" && evt.key !== " ") {
+        return
+      }
+      evt.preventDefault()
+      localizeAdvancedSummaryEl.click()
     })
 
     this.toggleMediaFolderSettings(localizeEl)

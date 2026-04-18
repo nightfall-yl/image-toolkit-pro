@@ -61,7 +61,7 @@ export const FORBIDDEN_SYMBOLS_FILENAME_PATTERN = /\s+/g;
 export interface ISettings {
   // ---- 通用 ----
   showNotifications: boolean;
-  hideExtraCommands: boolean;
+  showBatchCommands: boolean;
   showCleanupRibbon: boolean;
   autoProcess: boolean;
   autoProcessInterval: number;
@@ -98,7 +98,6 @@ export interface ISettings {
   excludedFoldersRegexp: string;
 
   // ---- 图片预览 ----
-  showMoveFileMenu: boolean;
   clickPreviewEnabled: boolean;
   previewAdaptiveRatio: number;
   dragResizeEnabled: boolean;
@@ -108,10 +107,10 @@ export interface ISettings {
 export const DEFAULT_SETTINGS: ISettings = {
   // 通用
   showNotifications: true,
-  hideExtraCommands: false,
+  showBatchCommands: true,
   showCleanupRibbon: true,
   autoProcess: true,
-  autoProcessInterval: 5,
+  autoProcessInterval: 3,
   processNewMarkdown: true,
   processNewAttachments: true,
   useTimestampNaming: true,
@@ -145,7 +144,6 @@ export const DEFAULT_SETTINGS: ISettings = {
   excludedFoldersRegexp: "",
 
   // 图片预览
-  showMoveFileMenu: false,
   clickPreviewEnabled: false,
   previewAdaptiveRatio: 0.9,
   dragResizeEnabled: true,
